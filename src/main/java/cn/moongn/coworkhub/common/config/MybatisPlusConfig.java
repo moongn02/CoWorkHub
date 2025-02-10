@@ -1,4 +1,4 @@
-package cn.moongn.coworkhub.config;
+package cn.moongn.coworkhub.common.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;

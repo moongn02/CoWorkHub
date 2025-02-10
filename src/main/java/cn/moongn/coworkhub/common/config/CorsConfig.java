@@ -1,4 +1,4 @@
-package cn.moongn.coworkhub.config;
+package cn.moongn.coworkhub.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,16 +11,19 @@ public class CorsConfig {
     
     @Bean
     public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*");
-        config.setAllowCredentials(true);
-        config.addAllowedMethod("*");
-        config.addAllowedHeader("*");
-        config.setMaxAge(3600L);
-        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        CorsConfiguration config = new CorsConfiguration();
         
+        // 允许跨域的源
+        config.addAllowedOriginPattern("*");
+        // 允许跨域的请求头
+        config.addAllowedHeader("*");
+        // 允许跨域的请求方法
+        config.addAllowedMethod("*");
+        // 允许携带cookie
+        config.setAllowCredentials(true);
+        
+        source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 } 

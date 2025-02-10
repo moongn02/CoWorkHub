@@ -26,7 +26,7 @@ mybatis-plus:
     db-config:
       logic-delete-field: deleted
       logic-delete-value: 1
-      logic-not-delete-value: 0 
+      logic-not-delete-value: 0
 
 jwt:
   secret: cn_moongn_jwt_secret_key_soo_0103_flower_keep_happiness
