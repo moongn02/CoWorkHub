@@ -4,4 +4,7 @@
     <select id="findByUsername" resultType="cn.moongn.coworkhub.model.User">
         SELECT * FROM user WHERE username = #{username}
     </select>
+    <select id="findById" resultType="cn.moongn.coworkhub.model.dto.UserDTO">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
 </mapper>

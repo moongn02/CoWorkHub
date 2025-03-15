@@ -2,7 +2,7 @@ package cn.moongn.coworkhub.model;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @TableName("user")
@@ -14,16 +14,9 @@ public class User {
     private String realName;
     private String email;
     private String phone;
-    private Long departmentId;
-    private Integer roleType;
+    private Long deptId;
+    private int gender;
+    private LocalDate birthday;
+    private Integer role;
     private Integer status;
-    
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-    
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-    
-    @TableLogic
-    private Integer deleted;
 }
