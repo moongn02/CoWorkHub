@@ -18,21 +18,21 @@ public class AuthController {
     private final AuthService authService;
     
     @PostMapping("/login")
-    public Result<Map<String, Object>> register(@Valid @RequestBody LoginVO loginVO) {
+    public Result<Map<String, Object>> login(@Valid @RequestBody LoginVO loginVO) {
         return Result.success(authService.login(loginVO));
     }
 
-    @PostMapping("/send-verification-code")
-    public Result<Void> sendVerificationCode(@RequestParam String emailOrPhone) {
-        authService.sendVerificationCode(emailOrPhone);
-        return Result.success();
-    }
+//    @PostMapping("/send-verification-code")
+//    public Result<Void> sendVerificationCode(@RequestParam String emailOrPhone) {
+//        authService.sendVerificationCode(emailOrPhone);
+//        return Result.success();
+//    }
 
-    @PostMapping("/reset-password")
-    public Result<Void> resetPassword(@RequestBody ResetPasswordVO resetPasswordVO) {
-        authService.resetPassword(resetPasswordVO);
-        return Result.success();
-    }
+//    @PostMapping("/reset-password")
+//    public Result<Void> resetPassword(@RequestBody ResetPasswordVO resetPasswordVO) {
+//        authService.resetPassword(resetPasswordVO);
+//        return Result.success();
+//    }
 
     @PostMapping("/logout")
     public Result<Void> logout() {

@@ -1,11 +1,13 @@
 package cn.moongn.coworkhub.service;
 
+import cn.moongn.coworkhub.model.ChangePasswordRequest;
 import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.model.dto.UserDTO;
 
 public interface UserService {
+    UserDTO getById(Long id);
     User getByUsername(String username);
-    User saveUser(User user);
-    void delete(Long id);
-    User update(User user);
-    User getById(Long id);
-} 
+    UserDTO save(User user);
+    void update(User user);
+    void changePassword(ChangePasswordRequest request);
+}

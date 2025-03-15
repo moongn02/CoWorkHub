@@ -1,6 +1,7 @@
 package cn.moongn.coworkhub.service.impl;
 
 import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.service.AuthService;
 import cn.moongn.coworkhub.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
