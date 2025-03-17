@@ -1,6 +1,6 @@
 package cn.moongn.coworkhub.service;
 
-import cn.moongn.coworkhub.common.vo.LoginVO;
+import cn.moongn.coworkhub.model.vo.LoginVO;
 import cn.moongn.coworkhub.model.dto.LoginDTO;
 import cn.moongn.coworkhub.model.vo.RegisterVO;
 import jakarta.validation.Valid;

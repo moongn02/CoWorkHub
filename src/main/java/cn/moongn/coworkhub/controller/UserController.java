@@ -2,7 +2,6 @@ package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.User;
-import cn.moongn.coworkhub.model.dto.UserDTO;
 import cn.moongn.coworkhub.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

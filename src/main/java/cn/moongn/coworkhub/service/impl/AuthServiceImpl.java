@@ -3,7 +3,7 @@
 import cn.hutool.core.bean.BeanUtil;
 import cn.moongn.coworkhub.common.utils.JwtUtils;
 import cn.moongn.coworkhub.common.exception.ApiException;
-import cn.moongn.coworkhub.common.vo.LoginVO;
+import cn.moongn.coworkhub.model.vo.LoginVO;
 import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.LoginDTO;
@@ -67,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         if (user != null && passwordEncoder.matches(loginVO.getPassword(), user.getPassword())) {
             String token = jwtUtils.generateToken(user.getUsername());
             Map<String, Object> result = new HashMap<>();
+            user.setPassword(null);
             result.put("token", token);
             result.put("user", user);
             return result;
