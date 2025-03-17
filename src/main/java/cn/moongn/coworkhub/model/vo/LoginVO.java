@@ -1,4 +1,4 @@
-package cn.moongn.coworkhub.common.vo;
+package cn.moongn.coworkhub.model.vo;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

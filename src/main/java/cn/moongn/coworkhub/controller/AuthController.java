@@ -1,8 +1,8 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
-import cn.moongn.coworkhub.common.vo.LoginVO;
-import cn.moongn.coworkhub.common.vo.ResetPasswordVO;
+import cn.moongn.coworkhub.model.vo.LoginVO;
+import cn.moongn.coworkhub.model.vo.RegisterVO;
 import cn.moongn.coworkhub.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,12 @@ public class AuthController {
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@Valid @RequestBody LoginVO loginVO) {
         return Result.success(authService.login(loginVO));
+    }
+
+    @PostMapping("/register")
+    public Result<Void> register(@Valid @RequestBody RegisterVO registerVO) {
+        authService.register(registerVO);
+        return Result.success();
     }
 
 //    @PostMapping("/send-verification-code")
