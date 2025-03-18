@@ -14,5 +14,5 @@ public class UserDTO {
     private LocalDate birthday;
     private String gender;
     private String department;
-    private String superior;
+    private String supervisor;
 }
