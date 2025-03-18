@@ -32,41 +32,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getById(Long id) {
-        return userMapper.findById(id);
+        return userMapper.getById(id);
     }
 
     @Override
-    public User getCurrentUser() {
+    public UserDTO getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
-
-            return getByUsername(username);
+            return formatUser(getByUsername(username));
         }
         return null;
     }
 
     public UserDTO formatUser(User user) {
-        UserDTO userDTO = new UserDTO();
+        UserDTO userFormat = new UserDTO();
 
-        BeanUtils.copyProperties(user, userDTO);
+        BeanUtils.copyProperties(user, userFormat);
 
         // 性别转换
-        userDTO.setGender(Gender.getDescriptionByCode(user.getGender()));
+        userFormat.setGender(Gender.getDescriptionByCode(user.getGender()));
 
         // 部门名称转换
-        userDTO.setDepartment(departmentService.getDepartmentName(user.getDeptId()));
+        userFormat.setDepartment(departmentService.getDepartmentName(user.getDeptId()));
 
         // 直接上级获取
-        userDTO.setSuperior(departmentService.getSuperiorName(user.getDeptId()));
+        userFormat.setSupervisor(departmentService.getsupervisorName(user.getDeptId()));
 
-        return userDTO;
+        return userFormat;
 
     }
 
     @Override
     public User getByUsername(String username) {
-        return userMapper.findByUsername(username);
+        return userMapper.getByUsername(username);
     }
 
     @Override
@@ -80,7 +79,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
-        User existingUser = userMapper.findByUsername(user.getUsername());
+        User existingUser = userMapper.getByUsername(user.getUsername());
         if (existingUser == null) {
             throw new RuntimeException("用户不存在");
         }

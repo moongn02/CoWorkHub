@@ -56,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginDTO getUser(String username) {
-        User user = userMapper.findByUsername(username);
+        User user = userMapper.getByUsername(username);
 
         return BeanUtil.copyProperties(user, LoginDTO.class);
     }
