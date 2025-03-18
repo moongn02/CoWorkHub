@@ -26,8 +26,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getById(Long id) {
-
+    public User getById(Long id) {
         return userMapper.findById(id);
     }
 

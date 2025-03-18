@@ -19,8 +19,6 @@ public class UserController {
         User user = userService.getCurrentUser();
 
         if (user != null) {
-            // 出于安全考虑，清除密码信息
-            user.setPassword(null);
             return Result.success(user);
         } else {
             return Result.error(401, "用户未认证或不存在");

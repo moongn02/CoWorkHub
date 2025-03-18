@@ -12,5 +12,5 @@ public interface UserMapper extends BaseMapper<User> {
     int insert(User user);
     int update(User user);
     int deleteById(@Param("id") Long id);
-    UserDTO findById(@Param("id") Long id);
+    User findById(@Param("id") Long id);
 }
