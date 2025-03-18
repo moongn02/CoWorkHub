@@ -1,11 +1,14 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.constant.enums.Gender;
 import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.ChangePasswordRequest;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
+import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
@@ -18,11 +21,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final DepartmentService departmentService;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, @Lazy PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserMapper userMapper, @Lazy PasswordEncoder passwordEncoder, DepartmentService departmentService) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.departmentService = departmentService;
     }
 
     @Override
@@ -41,19 +46,36 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    public UserDTO formatUser(User user) {
+        UserDTO userDTO = new UserDTO();
+
+        BeanUtils.copyProperties(user, userDTO);
+
+        // 性别转换
+        userDTO.setGender(Gender.getDescriptionByCode(user.getGender()));
+
+        // 部门名称转换
+        userDTO.setDepartment(departmentService.getDepartmentName(user.getDeptId()));
+
+        // 直接上级获取
+        userDTO.setSuperior(departmentService.getSuperiorName(user.getDeptId()));
+
+        return userDTO;
+
+    }
+
     @Override
     public User getByUsername(String username) {
         return userMapper.findByUsername(username);
     }
 
     @Override
-    public UserDTO save(User user) {
+    public void save(User user) {
         int res = userMapper.insert(user);
         if (res == 0) {
             throw new RuntimeException("注册失败，请联系系统管理员");
         }
 
-        return getById(user.getId());
     }
 
     @Override
