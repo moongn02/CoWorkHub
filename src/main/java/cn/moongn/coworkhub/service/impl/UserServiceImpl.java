@@ -51,6 +51,9 @@ public class UserServiceImpl implements UserService {
 
         BeanUtils.copyProperties(user, userFormat);
 
+        // 密码置空
+        userFormat.setPassword(null);
+
         // 性别转换
         userFormat.setGender(Gender.getDescriptionByCode(user.getGender()));
 

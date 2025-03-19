@@ -1,8 +1,8 @@
 package cn.moongn.coworkhub.constant.enums;
 
 public enum Gender {
-    MALE(1, "男"),
-    FEMALE(2, "女");
+    MALE(0, "男"),
+    FEMALE(1, "女");
 
     private final int code;
     private final String description;

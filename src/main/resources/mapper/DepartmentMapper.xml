@@ -4,4 +4,7 @@
     <select id="getById" resultType="cn.moongn.coworkhub.model.Department">
         SELECT * FROM department WHERE id = #{id}
     </select>
+    <select id="getList" resultType="cn.moongn.coworkhub.model.Department">
+        SELECT * FROM department WHERE deleted = 0
+    </select>
 </mapper>

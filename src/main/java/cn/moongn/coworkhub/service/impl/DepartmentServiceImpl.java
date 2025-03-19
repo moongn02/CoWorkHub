@@ -8,6 +8,8 @@ import cn.moongn.coworkhub.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService {
@@ -15,13 +17,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentMapper departmentMapper;
     private final UserMapper userMapper;
 
+    @Override
     public String getDepartmentName(Long deptId) {
+        if (deptId == null) {
+            return null;
+        }
         Department department = departmentMapper.getById(deptId);
 
         return department.getName();
     }
 
+    @Override
     public String getSupervisorName(Long deptId) {
+        if (deptId == null) {
+            return null;
+        }
         Department department = departmentMapper.getById(deptId);
         Long superiorId = department.getLeaderId();
         String superiorRealName = null;
@@ -31,5 +41,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
         return superiorRealName;
+    }
+
+    @Override
+    public List<Department> getList() {
+        return departmentMapper.getList();
     }
 }
