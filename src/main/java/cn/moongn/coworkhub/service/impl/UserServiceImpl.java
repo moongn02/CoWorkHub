@@ -36,15 +36,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getCurrentUser() {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
-            return formatUser(getByUsername(username));
+            return getByUsername(username);
         }
         return null;
     }
 
+    @Override
     public UserDTO formatUser(User user) {
         UserDTO userFormat = new UserDTO();
 

@@ -6,7 +6,8 @@ import cn.moongn.coworkhub.model.dto.UserDTO;
 
 public interface UserService {
     User getById(Long id);
-    UserDTO getCurrentUser();
+    User getCurrentUser();
+    UserDTO formatUser(User user);
     User getByUsername(String username);
     void save(User user);
     void update(User user);
