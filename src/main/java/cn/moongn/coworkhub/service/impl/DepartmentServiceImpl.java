@@ -21,7 +21,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         return department.getName();
     }
 
-    public String getsupervisorName(Long deptId) {
+    public String getSupervisorName(Long deptId) {
         Department department = departmentMapper.getById(deptId);
         Long superiorId = department.getLeaderId();
         String superiorRealName = null;
