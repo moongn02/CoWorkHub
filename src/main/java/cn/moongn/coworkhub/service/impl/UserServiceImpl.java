@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
         userFormat.setDepartment(departmentService.getDepartmentName(user.getDeptId()));
 
         // 直接上级获取
-        userFormat.setSupervisor(departmentService.getsupervisorName(user.getDeptId()));
+        userFormat.setSupervisor(departmentService.getSupervisorName(user.getDeptId()));
 
         return userFormat;
 
