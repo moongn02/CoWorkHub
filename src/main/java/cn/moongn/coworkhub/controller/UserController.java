@@ -3,9 +3,12 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
+import cn.moongn.coworkhub.model.vo.UpdateUserVO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -44,10 +47,13 @@ public class UserController {
     }
 
     // 编辑个人信息
-//    @PostMapping("/edit")
-//    public Result<Void> updateUser(@Valid @RequestBody UpdateUserVO updateUserVO) {
-//
-//
-//        return Result.success();
-//    }
+    @PostMapping("/edit")
+    public Result<Void> updateUser(@Valid @RequestBody UpdateUserVO updateUserVO) {
+        User user = userService.getCurrentUser();
+        BeanUtils.copyProperties(updateUserVO, user);
+
+        userService.update(user);
+
+        return Result.success();
+    }
 }

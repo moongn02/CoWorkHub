@@ -7,7 +7,7 @@ import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -83,16 +83,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
-        User existingUser = userMapper.getByUsername(user.getUsername());
-        if (existingUser == null) {
-            throw new RuntimeException("用户不存在");
-        }
-        // 保持密码不变
-        user.setPassword(existingUser.getPassword());
-        // 使用 MyBatis Plus 的更新方法
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("username", user.getUsername());
-        userMapper.update(user, wrapper);
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId,user.getId());
     }
 
     @Override
