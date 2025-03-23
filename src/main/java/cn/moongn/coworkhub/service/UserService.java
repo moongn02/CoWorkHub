@@ -3,6 +3,9 @@ package cn.moongn.coworkhub.service;
 import cn.moongn.coworkhub.model.ChangePasswordRequest;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
+import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
 
 public interface UserService {
     User getById(Long id);
@@ -11,5 +14,5 @@ public interface UserService {
     User getByUsername(String username);
     void save(User user);
     void update(User user);
-    void changePassword(ChangePasswordRequest request);
+    void changePassword(@Valid @RequestBody ResetPasswordVO resetPasswordVO);
 }

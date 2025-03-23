@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 public class UpdateUserVO {
@@ -24,7 +24,7 @@ public class UpdateUserVO {
 
     @NotNull(message = "生日不能为空")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate birthday;
+    private Date birthday;
 
     @NotNull(message = "性别不能为空")
     // 假设性别使用整数表示：0-未知，1-男，2-女

@@ -3,6 +3,7 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
+import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
 import cn.moongn.coworkhub.model.vo.UpdateUserVO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
@@ -10,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/user")
@@ -52,7 +55,20 @@ public class UserController {
         User user = userService.getCurrentUser();
         BeanUtils.copyProperties(updateUserVO, user);
 
+        if (updateUserVO.getBirthday() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            user.setBirthday(LocalDate.parse(sdf.format(updateUserVO.getBirthday())));
+        }
+
         userService.update(user);
+
+        return Result.success();
+    }
+
+    // 修改密码
+    @PostMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody ResetPasswordVO resetPasswordVO) {
+        userService.changePassword(resetPasswordVO);
 
         return Result.success();
     }

@@ -1,10 +1,11 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.constant.enums.Gender;
 import cn.moongn.coworkhub.mapper.UserMapper;
-import cn.moongn.coworkhub.model.ChangePasswordRequest;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
+import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public void save(User user) {
         int res = userMapper.insert(user);
         if (res == 0) {
-            throw new RuntimeException("注册失败，请联系系统管理员");
+            throw new ApiException("注册失败，请联系系统管理员");
         }
 
     }
@@ -85,21 +86,21 @@ public class UserServiceImpl implements UserService {
     public void update(User user) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,user.getId());
+        int res = userMapper.update(user, queryWrapper);
+        if (res == 0) {
+            throw new ApiException("更新失败，请联系系统管理员");
+        }
     }
 
     @Override
-    public void changePassword(ChangePasswordRequest request) {
+    public void changePassword(ResetPasswordVO resetPasswordVO) {
+        User user = getCurrentUser();
+        if (user != null && passwordEncoder.matches(resetPasswordVO.getCurrentPassword(), user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(resetPasswordVO.getNewPassword()));
+        } else {
+            throw new ApiException("当前密码错误");
+        }
 
+        update(user);
     }
-
-//    @Override
-//    public void changePassword(ChangePasswordRequest request) {
-//        User user = userMapper.findByUsername(request.getUsername());
-//        if (user != null && passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-//            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-//            userMapper.updateById(user);
-//        } else {
-//            throw new RuntimeException("当前密码不正确");
-//        }
-//    }
 }
