@@ -28,7 +28,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
     @Override
     public String getDepartmentName(Long deptId) {
         if (deptId == null || deptId == 0) {
-            return "无上级部门";
+            return "-";
         }
         Department department = departmentMapper.getById(deptId);
         return department != null ? department.getName() : null;
@@ -150,7 +150,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
                 dto.setParentName(parent.getName());
             }
         } else {
-            dto.setParentName("无上级部门");
+            dto.setParentName("-");
         }
 
         return dto;

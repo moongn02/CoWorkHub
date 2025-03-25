@@ -6,7 +6,7 @@
     </select>
 
     <select id="selectDepartmentPage" resultType="cn.moongn.coworkhub.model.Department">
-        SELECT * FROM t_department
+        SELECT * FROM department
         <where>
             <if test="keyword != null and keyword != ''">
                 AND name LIKE CONCAT('%', #{keyword}, '%')

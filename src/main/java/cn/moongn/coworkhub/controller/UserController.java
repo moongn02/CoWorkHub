@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -71,5 +72,17 @@ public class UserController {
         userService.changePassword(resetPasswordVO);
 
         return Result.success();
+    }
+
+    // 获取用户列表
+    @GetMapping("/list")
+    public Result<List<UserDTO>> getUserList() {
+        List<UserDTO> userList = userService.getUserList();
+
+        if (userList != null) {
+            return Result.success(userList);
+        } else {
+            return Result.error("获取失败，请联系管理员");
+        }
     }
 }

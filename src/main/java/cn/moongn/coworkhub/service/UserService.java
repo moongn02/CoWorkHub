@@ -7,6 +7,8 @@ import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 public interface UserService {
     User getById(Long id);
     User getCurrentUser();
@@ -15,4 +17,5 @@ public interface UserService {
     void save(User user);
     void update(User user);
     void changePassword(@Valid @RequestBody ResetPasswordVO resetPasswordVO);
+    List<UserDTO> getUserList();
 }
