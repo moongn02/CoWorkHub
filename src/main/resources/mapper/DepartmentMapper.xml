@@ -4,7 +4,24 @@
     <select id="getById" resultType="cn.moongn.coworkhub.model.Department">
         SELECT * FROM department WHERE id = #{id}
     </select>
-    <select id="getList" resultType="cn.moongn.coworkhub.model.Department">
-        SELECT * FROM department WHERE deleted = 0
+
+    <select id="selectDepartmentPage" resultType="cn.moongn.coworkhub.model.Department">
+        SELECT * FROM t_department
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectAllDepartments" resultType="cn.moongn.coworkhub.model.Department">
+        SELECT * FROM department ORDER BY id ASC
     </select>
 </mapper>
