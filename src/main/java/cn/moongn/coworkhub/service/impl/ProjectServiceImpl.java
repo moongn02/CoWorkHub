@@ -8,6 +8,7 @@ import cn.moongn.coworkhub.model.Project;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.ProjectDTO;
 import cn.moongn.coworkhub.service.ProjectService;
+import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,6 +27,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
     private final ProjectMapper projectMapper;
     private final DepartmentMapper departmentMapper;
     private final UserMapper userMapper;
+    private final UserService userService;
 
     @Override
     public Page<ProjectDTO> pageProjects(int current, int size, Map<String, Object> params) {
@@ -75,18 +77,24 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             project.setParentId(0L);
         }
 
+        // 设置更新人ID
+        User currentUser = userService.getCurrentUser();
+        project.setUpdaterId(currentUser.getId());
+
         return projectMapper.insert(project) > 0;
     }
 
     @Override
     @Transactional
     public boolean updateProject(Project project) {
-        // 设置更新时间
-
         // 如果parentId为null，设置为0
         if (project.getParentId() == null) {
             project.setParentId(0L);
         }
+
+        // 设置更新人ID
+        User currentUser = userService.getCurrentUser();
+        project.setUpdaterId(currentUser.getId());
 
         return projectMapper.updateById(project) > 0;
     }
@@ -97,6 +105,10 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         Project project = new Project();
         project.setId(id);
         project.setStatus(status);
+
+        // 设置更新人ID
+        User currentUser = userService.getCurrentUser();
+        project.setUpdaterId(currentUser.getId());
 
         return projectMapper.updateById(project) > 0;
     }

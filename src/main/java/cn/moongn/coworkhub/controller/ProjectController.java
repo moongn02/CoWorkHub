@@ -9,11 +9,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/projects")
+@RequestMapping("/api/project")
 @RequiredArgsConstructor
 public class ProjectController {
 
@@ -32,12 +33,11 @@ public class ProjectController {
             @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) Long parentId) {
 
-        Map<String, Object> params = Map.of(
-                "keyword", keyword,
-                "status", status,
-                "departmentId", departmentId,
-                "parentId", parentId
-        );
+        Map<String, Object> params = new HashMap<>();
+        params.put("keyword", keyword);
+        params.put("status", status);
+        params.put("departmentId", departmentId);
+        params.put("parentId", parentId);
 
         Page<ProjectDTO> page = projectService.pageProjects(current, size, params);
         return Result.success(page);
@@ -58,7 +58,7 @@ public class ProjectController {
     /**
      * 添加项目
      */
-    @PostMapping
+    @PostMapping("/add")
     public Result<Boolean> addProject(@RequestBody Project project) {
         boolean success = projectService.addProject(project);
         return success ? Result.success(true) : Result.error("添加项目失败");
@@ -67,8 +67,9 @@ public class ProjectController {
     /**
      * 更新项目
      */
-    @PutMapping
-    public Result<Boolean> updateProject(@RequestBody Project project) {
+    @PutMapping("/update/{id}")
+    public Result<Boolean> updateProject(@PathVariable Long id, @RequestBody Project project) {
+        project.setId(id);
         boolean success = projectService.updateProject(project);
         return success ? Result.success(true) : Result.error("更新项目失败");
     }
