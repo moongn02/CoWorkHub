@@ -3,6 +3,7 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.Department;
 import cn.moongn.coworkhub.model.dto.DepartmentDTO;
+import cn.moongn.coworkhub.model.dto.DepartmentTreeDTO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -95,5 +96,14 @@ public class DepartmentController {
     public Result<Boolean> updateDepartmentStatus(@PathVariable Long id, @RequestParam Integer status) {
         boolean success = departmentService.updateDepartmentStatus(id, status);
         return success ? Result.success(true) : Result.error("更新部门状态失败");
+    }
+
+    /**
+     * 获取部门树形结构（用于级联选择器）
+     */
+    @GetMapping("/tree")
+    public Result<List<DepartmentTreeDTO>> getDepartmentTree() {
+        List<DepartmentTreeDTO> departmentTree = departmentService.getDepartmentTree();
+        return Result.success(departmentTree);
     }
 }

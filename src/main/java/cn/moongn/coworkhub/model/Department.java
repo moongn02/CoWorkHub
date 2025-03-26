@@ -2,7 +2,6 @@ package cn.moongn.coworkhub.model;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import java.time.LocalDateTime;
 
 @Data
 @TableName("department")

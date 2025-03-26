@@ -5,6 +5,7 @@ import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.Department;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.DepartmentDTO;
+import cn.moongn.coworkhub.model.dto.DepartmentTreeDTO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,6 +104,54 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
             return null;
         }
         return convertToDTO(department);
+    }
+
+    @Override
+    public List<DepartmentTreeDTO> getDepartmentTree() {
+        // 查询所有部门
+        List<Department> departments = departmentMapper.selectAllDepartments();
+
+        // 构建部门树
+        List<DepartmentTreeDTO> rootDepartments = new ArrayList<>();
+
+        // 按parentId分组
+        Map<Long, List<Department>> departmentMap = departments.stream()
+                .collect(Collectors.groupingBy(Department::getParentId));
+
+        // 获取根部门（parentId = 0）
+        List<Department> rootDepts = departmentMap.getOrDefault(0L, new ArrayList<>());
+
+        // 递归构建部门树
+        for (Department dept : rootDepts) {
+            DepartmentTreeDTO treeNode = new DepartmentTreeDTO();
+            treeNode.setId(dept.getId());
+            treeNode.setName(dept.getName());
+            treeNode.setChildren(buildDepartmentTree(dept.getId(), departmentMap));
+            rootDepartments.add(treeNode);
+        }
+
+        return rootDepartments;
+    }
+
+    /**
+     * 递归构建部门树
+     */
+    private List<DepartmentTreeDTO> buildDepartmentTree(Long parentId, Map<Long, List<Department>> departmentMap) {
+        List<Department> children = departmentMap.getOrDefault(parentId, new ArrayList<>());
+        if (children.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<DepartmentTreeDTO> childrenTree = new ArrayList<>();
+        for (Department dept : children) {
+            DepartmentTreeDTO treeNode = new DepartmentTreeDTO();
+            treeNode.setId(dept.getId());
+            treeNode.setName(dept.getName());
+            treeNode.setChildren(buildDepartmentTree(dept.getId(), departmentMap));
+            childrenTree.add(treeNode);
+        }
+
+        return childrenTree;
     }
 
     @Override

@@ -2,6 +2,7 @@ package cn.moongn.coworkhub.service;
 
 import cn.moongn.coworkhub.model.Department;
 import cn.moongn.coworkhub.model.dto.DepartmentDTO;
+import cn.moongn.coworkhub.model.dto.DepartmentTreeDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -38,6 +39,11 @@ public interface DepartmentService extends IService<Department> {
       * 获取部门详情
       */
      DepartmentDTO getDepartmentDetail(Long id);
+
+     /**
+      * 获取部门树形结构（用于级联选择器）
+      */
+     List<DepartmentTreeDTO> getDepartmentTree();
 
      /**
       * 添加部门
