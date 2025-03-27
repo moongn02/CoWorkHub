@@ -49,13 +49,6 @@ public interface PermissionService extends IService<Permission> {
     boolean updatePermissionStatus(Long id, Integer status);
 
     /**
-     * 删除权限
-     * @param id 权限ID
-     * @return 是否成功
-     */
-    boolean deletePermission(Long id);
-
-    /**
      * 获取父级权限列表（用于下拉选择）
      * @return 父级权限列表
      */
