@@ -17,6 +17,6 @@ public class User {
     private Long deptId;
     private int gender;
     private LocalDate birthday;
-    private Integer role;
+    private Integer roleId;
     private Integer status;
 }
