@@ -1,6 +1,5 @@
 package cn.moongn.coworkhub.service;
 
-import cn.moongn.coworkhub.model.ChangePasswordRequest;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
 import cn.moongn.coworkhub.model.vo.ResetPasswordVO;

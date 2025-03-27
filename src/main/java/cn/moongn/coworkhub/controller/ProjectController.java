@@ -19,7 +19,6 @@ import java.util.Map;
 public class ProjectController {
 
     private final ProjectService projectService;
-    private final DepartmentService departmentService;
 
     /**
      * 分页查询项目列表
