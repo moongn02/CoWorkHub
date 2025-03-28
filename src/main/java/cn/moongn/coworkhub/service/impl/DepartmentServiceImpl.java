@@ -157,7 +157,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
     @Override
     @Transactional
     public boolean addDepartment(Department department) {
-        return this.save(department);
+        return this.updateById(department);
     }
 
     @Override

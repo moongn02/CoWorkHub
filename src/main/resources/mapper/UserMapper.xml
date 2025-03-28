@@ -1,10 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="cn.moongn.coworkhub.mapper.UserMapper">
-    <select id="getByUsername" resultType="cn.moongn.coworkhub.model.User">
+    <resultMap id="BaseResultMap" type="cn.moongn.coworkhub.model.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+        <result column="gender" property="gender"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="status" property="status"/>
+        <result column="birthday" property="birthday"/>
+    </resultMap>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <select id="getByUsername" resultMap="BaseResultMap">
         SELECT * FROM user WHERE username = #{username}
     </select>
-    <select id="getById" resultType="cn.moongn.coworkhub.model.User">
-        SELECT * FROM user WHERE id = #{id}
+
+    <select id="selectUserPage" resultMap="BaseResultMap">
+        SELECT u.*
+        FROM user u
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (u.username LIKE CONCAT('%', #{keyword}, '%')
+                OR u.real_name LIKE CONCAT('%', #{keyword}, '%')
+                OR u.phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND u.status = #{status}
+            </if>
+            <if test="deptId != null">
+                AND u.dept_id = #{deptId}
+            </if>
+            <if test="roleId != null">
+                AND u.role_id = #{roleId}
+            </if>
+        </where>
+        ORDER BY u.create_time DESC
     </select>
 </mapper>

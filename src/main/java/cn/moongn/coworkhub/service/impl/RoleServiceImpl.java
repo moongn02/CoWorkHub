@@ -78,7 +78,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     @Transactional
     public boolean addRole(Role role) {
-        return this.save(role);
+        return this.updateById(role);
     }
 
     @Override

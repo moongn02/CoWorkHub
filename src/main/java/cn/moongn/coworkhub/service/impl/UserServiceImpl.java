@@ -2,37 +2,41 @@ package cn.moongn.coworkhub.service.impl;
 
 import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.constant.enums.Gender;
+import cn.moongn.coworkhub.mapper.RoleMapper;
 import cn.moongn.coworkhub.mapper.UserMapper;
+import cn.moongn.coworkhub.model.Role;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
 import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserService {
+@RequiredArgsConstructor
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final DepartmentService departmentService;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    public UserServiceImpl(UserMapper userMapper, @Lazy PasswordEncoder passwordEncoder, DepartmentService departmentService) {
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.departmentService = departmentService;
-    }
+    // 默认密码
+    private static final String DEFAULT_PASSWORD = "123456";
 
     @Override
     public User getById(Long id) {
@@ -68,7 +72,6 @@ public class UserServiceImpl implements UserService {
         userFormat.setSupervisor(departmentService.getSupervisorName(user.getDeptId()));
 
         return userFormat;
-
     }
 
     @Override
@@ -77,16 +80,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void save(User user) {
-        int res = userMapper.insert(user);
-        if (res == 0) {
-            throw new ApiException("注册失败，请联系系统管理员");
+    public void update(User user) {
+        // 检查用户名是否已存在
+        User existUser = getByUsername(user.getUsername());
+        if (existUser != null) {
+            throw new ApiException("用户名已存在");
         }
 
-    }
-
-    @Override
-    public void update(User user) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId,user.getId());
         int res = userMapper.update(user, queryWrapper);
@@ -115,5 +115,152 @@ public class UserServiceImpl implements UserService {
                 .map(this::formatUser)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    @Override
+    public Page<UserDTO> pageUsers(int current, int size, Map<String, Object> params) {
+        // 创建分页对象
+        Page<User> page = new Page<>(current, size);
+
+        // 获取查询参数
+        String keyword = params.get("keyword") != null ? params.get("keyword").toString() : null;
+        Integer status = params.get("status") != null ? Integer.parseInt(params.get("status").toString()) : null;
+        Long deptId = params.get("deptId") != null ? Long.parseLong(params.get("deptId").toString()) : null;
+        Integer roleId = params.get("roleId") != null ? Integer.parseInt(params.get("roleId").toString()) : null;
+
+        // 执行分页查询
+        Page<User> userPage = userMapper.selectUserPage(page, keyword, status, deptId, roleId);
+
+        // 转换为DTO
+        Page<UserDTO> dtoPage = new Page<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
+
+        List<UserDTO> records = userPage.getRecords().stream()
+                .map(this::formatUser)
+                .collect(Collectors.toList());
+
+        dtoPage.setRecords(records);
+        return dtoPage;
+    }
+
+    @Override
+    public UserDTO getUserDetail(Long id) {
+        User user = userMapper.getById(id);
+        if (user == null) {
+            return null;
+        }
+
+        return formatUser(user);
+    }
+
+    @Override
+    @Transactional
+    public boolean addUser(User user) {
+        // 检查用户名是否已存在
+        User existUser = getByUsername(user.getUsername());
+        if (existUser != null) {
+            throw new ApiException("用户名已存在");
+        }
+
+        // 设置默认密码
+        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+
+        // 设置默认状态为启用
+        if (user.getStatus() == null) {
+            user.setStatus(1);
+        }
+
+        return save(user);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateUser(User user) {
+        // 检查用户名是否已存在
+        User existUser = getByUsername(user.getUsername());
+        if (existUser != null) {
+            throw new ApiException("用户名已存在");
+        }
+
+        // 不更新密码字段
+        user.setPassword(null);
+
+        return updateById(user);
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteUser(Long id) {
+        User user = getById(id);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+
+        // 检查是否为当前登录用户
+        User currentUser = getCurrentUser();
+        if (currentUser != null && currentUser.getId().equals(id)) {
+            throw new ApiException("不能删除当前登录用户");
+        }
+
+        return removeById(id);
+    }
+
+    @Override
+    @Transactional
+    public boolean batchDeleteUsers(List<Long> ids) {
+        // 检查是否包含当前登录用户
+        User currentUser = getCurrentUser();
+        if (currentUser != null && ids.contains(currentUser.getId())) {
+            throw new ApiException("不能删除当前登录用户");
+        }
+
+        return removeBatchByIds(ids);
+    }
+
+    @Override
+    @Transactional
+    public boolean resetUserPassword(Long id) {
+        User user = getById(id);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+
+        user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+        return updateById(user);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateUserStatus(Long id, Integer status) {
+        User user = getById(id);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+
+        // 检查是否为当前登录用户
+        User currentUser = getCurrentUser();
+        if (currentUser != null && currentUser.getId().equals(id) && status == 0) {
+            throw new ApiException("不能禁用当前登录用户");
+        }
+
+        user.setStatus(status);
+        return updateById(user);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateUserRole(Long userId, Integer roleId) {
+        User user = getById(userId);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+
+        // 验证角色是否存在
+        Role role = roleMapper.selectById(roleId);
+        if (role == null) {
+            throw new ApiException("角色不存在");
+        }
+
+        user.setRoleId(roleId);
+        return updateById(user);
     }
 }

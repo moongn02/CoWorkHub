@@ -68,7 +68,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     @Transactional
     public boolean addPermission(Permission permission) {
 
-        return this.save(permission);
+        return this.updateById(permission);
     }
 
     @Override
