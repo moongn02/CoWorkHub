@@ -31,4 +31,9 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
      * @return 关联的角色数量
      */
     int countByPermissionId(@Param("permissionId") Long permissionId);
+
+    /**
+     * 根据角色ID获取权限ID列表
+     */
+    List<Long> getPermissionIdsByRoleId(@Param("roleId") Long roleId);
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.moongn.coworkhub.mapper.RoleMapper">
+
+    <select id="getById" resultType="cn.moongn.coworkhub.model.Role">
+        SELECT * FROM role WHERE id = #{id}
+    </select>
+
+    <select id="selectRolePage" resultType="cn.moongn.coworkhub.model.Role">
+        SELECT * FROM role
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectAllRoles" resultType="cn.moongn.coworkhub.model.Role">
+        SELECT * FROM role ORDER BY id DESC
+    </select>
+</mapper>

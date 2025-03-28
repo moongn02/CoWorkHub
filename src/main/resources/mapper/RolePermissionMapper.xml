@@ -24,4 +24,8 @@
         WHERE permission_id = #{permissionId}
     </select>
 
+    <select id="getPermissionIdsByRoleId" resultType="java.lang.Long">
+        SELECT permission_id FROM role_permission WHERE role_id = #{roleId}
+    </select>
+
 </mapper>
