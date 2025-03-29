@@ -65,7 +65,7 @@ public class UserController {
             user.setBirthday(LocalDate.parse(sdf.format(updateUserVO.getBirthday())));
         }
 
-        userService.update(user);
+        userService.updateById(user);
 
         return Result.success();
     }
@@ -187,7 +187,7 @@ public class UserController {
      * 更新用户角色
      */
     @PutMapping("/update_role/{userId}")
-    public Result<Boolean> updateUserRole(@PathVariable Long userId, @RequestParam Integer roleId) {
+    public Result<Boolean> updateUserRole(@PathVariable Long userId, @RequestParam Long roleId) {
         boolean success = userService.updateUserRole(userId, roleId);
         return success ? Result.success(true) : Result.error("更新用户角色失败");
     }

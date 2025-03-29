@@ -12,7 +12,12 @@ public class UserDTO {
     private String phone;
     private String email;
     private LocalDate birthday;
-    private String gender;
-    private String department;
+    private Integer gender;
+    private String genderText;
+    private Long deptId;
+    private String deptText;
     private String supervisor;
+    private Long roleId;
+    private String roleName;
+    private Integer status;
 }

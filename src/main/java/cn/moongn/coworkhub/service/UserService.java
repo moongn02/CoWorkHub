@@ -63,5 +63,5 @@ public interface UserService extends IService<User> {
     /**
      * 更新用户角色
      */
-    boolean updateUserRole(Long userId, Integer roleId);
+    boolean updateUserRole(Long userId, Long roleId);
 }

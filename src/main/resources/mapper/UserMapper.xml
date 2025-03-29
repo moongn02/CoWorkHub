@@ -42,6 +42,6 @@
                 AND u.role_id = #{roleId}
             </if>
         </where>
-        ORDER BY u.create_time DESC
+        ORDER BY u.id ASC
     </select>
 </mapper>

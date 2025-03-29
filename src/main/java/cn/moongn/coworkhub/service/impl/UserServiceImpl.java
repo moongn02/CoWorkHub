@@ -63,13 +63,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         userFormat.setPassword(null);
 
         // 性别转换
-        userFormat.setGender(Gender.getDescriptionByCode(user.getGender()));
+        userFormat.setGenderText(Gender.getDescriptionByCode(user.getGender()));
 
         // 部门名称转换
-        userFormat.setDepartment(departmentService.getDepartmentName(user.getDeptId()));
+        userFormat.setDeptText(departmentService.getDepartmentName(user.getDeptId()));
 
         // 直接上级获取
         userFormat.setSupervisor(departmentService.getSupervisorName(user.getDeptId()));
+
+        // 角色名获取
+        userFormat.setRoleName(roleMapper.getById(user.getRoleId()).getName());
 
         return userFormat;
     }
@@ -248,7 +251,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional
-    public boolean updateUserRole(Long userId, Integer roleId) {
+    public boolean updateUserRole(Long userId, Long roleId) {
         User user = getById(userId);
         if (user == null) {
             throw new ApiException("用户不存在");
