@@ -140,7 +140,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         dto.setStatusText(permission.getStatus() == 1 ? "启用" : "禁用");
 
         // 设置类型文本
-        dto.setStatusText(permission.getStatus() == 1 ? "菜单权限" : "按钮权限");
+        dto.setTypeText(permission.getType() == 1 ? "菜单权限" : "按钮权限");
 
         // 如果有上级权限，获取上级权限名称
         if (permission.getParentId() != null && permission.getParentId() > 0) {
@@ -148,6 +148,8 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
             if (parentPermission != null) {
                 dto.setParentName(parentPermission.getName());
             }
+        } else {
+            dto.setParentName("-");
         }
 
         return dto;

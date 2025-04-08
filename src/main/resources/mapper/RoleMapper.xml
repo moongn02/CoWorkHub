@@ -20,6 +20,6 @@
     </select>
 
     <select id="selectAllRoles" resultType="cn.moongn.coworkhub.model.Role">
-        SELECT * FROM role ORDER BY id DESC
+        SELECT * FROM role ORDER BY id ASC
     </select>
 </mapper>

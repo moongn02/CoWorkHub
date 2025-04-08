@@ -10,6 +10,7 @@ public class PermissionDTO {
     private Long parentId;
     private String parentName;
     private Integer type;
+    private String typeText;
     private Boolean isSensitive;
     private Integer status;
     private String statusText;
