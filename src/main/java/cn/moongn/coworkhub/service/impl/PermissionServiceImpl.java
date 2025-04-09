@@ -112,13 +112,13 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
                 new QueryWrapper<Permission>().eq("parent_id", id)
         );
         if (childCount > 0) {
-            throw new RuntimeException("该权限下存在子权限，无法删除");
+            throw new ApiException("该权限下存在子权限，无法删除");
         }
 
         // 检查权限是否被角色使用
         int roleCount = rolePermissionMapper.countByPermissionId(id);
         if (roleCount > 0) {
-            throw new RuntimeException("该权限已被角色使用，无法删除");
+            throw new ApiException("该权限已被角色使用，无法删除");
         }
 
         return permissionMapper.deleteById(id) > 0;
