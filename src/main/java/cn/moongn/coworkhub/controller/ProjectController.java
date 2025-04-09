@@ -83,6 +83,28 @@ public class ProjectController {
     }
 
     /**
+     * 删除项目
+     */
+    @DeleteMapping("/{id}")
+    public Result<Boolean> deletePermission(@PathVariable Long id) {
+        boolean success = projectService.deleteProject(id);
+        return success ? Result.success(true) : Result.error("删除项目失败");
+    }
+
+    /**
+     * 批量删除项目
+     */
+    @DeleteMapping("/batch")
+    public Result<Boolean> batchDeletePermissions(@RequestBody Map<String, List<Long>> requestMap) {
+        List<Long> ids = requestMap.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("未提供项目ID");
+        }
+        boolean success = projectService.batchDeleteProjects(ids);
+        return success ? Result.success(true) : Result.error("批量删除失败");
+    }
+
+    /**
      * 获取父级项目列表（用于下拉选择）
      */
     @GetMapping("/parents")

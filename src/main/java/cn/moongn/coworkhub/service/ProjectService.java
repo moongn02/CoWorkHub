@@ -41,6 +41,13 @@ public interface ProjectService extends IService<Project> {
     boolean updateProject(Project project);
 
     /**
+     * 删除项目
+     * @param id 项目ID
+     * @return 是否成功
+     */
+    boolean deleteProject(Long id);
+
+    /**
      * 更新项目状态
      * @param id 项目ID
      * @param status 状态
@@ -53,4 +60,11 @@ public interface ProjectService extends IService<Project> {
      * @return 父级项目列表
      */
     List<ProjectDTO> getParentProjects();
+
+    /**
+     * 批量删除项目
+     * @param ids 项目ID列表
+     * @return 是否成功
+     */
+    boolean batchDeleteProjects(List<Long> ids);
 }

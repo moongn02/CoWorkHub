@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface ProjectMapper extends BaseMapper<Project> {
@@ -32,4 +33,7 @@ public interface ProjectMapper extends BaseMapper<Project> {
             @Param("departmentId") Long departmentId,
             @Param("parentId") Long parentId
     );
+
+    @Select("SELECT COUNT(*) FROM project WHERE parent_id = #{parentId}")
+    int countChildProjects(@Param("parentId") Long parentId);
 }

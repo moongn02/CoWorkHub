@@ -1,5 +1,6 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.DepartmentMapper;
 import cn.moongn.coworkhub.mapper.ProjectMapper;
 import cn.moongn.coworkhub.mapper.UserMapper;
@@ -111,6 +112,31 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         project.setUpdaterId(currentUser.getId());
 
         return projectMapper.updateById(project) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteProject(Long id) {
+        int childCount = projectMapper.countChildProjects(id);
+        if (childCount > 0) {
+            throw new ApiException("存在子项目，无法删除");
+        }
+
+        return projectMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean batchDeleteProjects(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return false;
+        }
+
+        for (Long projectId : ids) {
+            deleteProject(projectId);
+        }
+
+        return true;
     }
 
     @Override
