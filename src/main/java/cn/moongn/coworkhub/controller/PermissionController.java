@@ -86,6 +86,28 @@ public class PermissionController {
     }
 
     /**
+     * 删除权限
+     */
+    @DeleteMapping("/{id}")
+    public Result<Boolean> deletePermission(@PathVariable Long id) {
+        boolean success = permissionService.deletePermission(id);
+        return success ? Result.success(true) : Result.error("删除权限失败");
+    }
+
+    /**
+     * 批量删除权限
+     */
+    @DeleteMapping("/batch")
+    public Result<Boolean> batchDeletePermissions(@RequestBody Map<String, List<Long>> requestMap) {
+        List<Long> ids = requestMap.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("未提供权限ID");
+        }
+        boolean success = permissionService.batchDeletePermissions(ids);
+        return success ? Result.success(true) : Result.error("批量删除失败");
+    }
+
+    /**
      * 获取一级权限列表（用于下拉选择）
      */
     @GetMapping("/parents")

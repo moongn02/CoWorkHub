@@ -60,4 +60,11 @@ public interface PermissionService extends IService<Permission> {
      * @return 父级权限列表
      */
     List<PermissionDTO> getParentPermissions();
+
+    /**
+     * 批量删除权限
+     * @param ids 权限ID列表
+     * @return 是否成功
+     */
+    boolean batchDeletePermissions(List<Long> ids);
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -47,4 +48,12 @@ public interface PermissionMapper extends BaseMapper<Permission> {
      * @return 父级权限列表
      */
     List<Permission> selectParentPermissions();
+
+    /**
+     * 根据父ID统计子权限数量
+     * @param parentId 父权限ID
+     * @return 子权限数量
+     */
+    @Select("SELECT COUNT(*) FROM permission WHERE parent_id = #{parentId}")
+    Long countByParentId(@Param("parentId") Long parentId);
 }

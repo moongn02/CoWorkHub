@@ -1,10 +1,12 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.PermissionMapper;
 import cn.moongn.coworkhub.mapper.RolePermissionMapper;
 import cn.moongn.coworkhub.model.Permission;
 import cn.moongn.coworkhub.model.dto.PermissionDTO;
 import cn.moongn.coworkhub.service.PermissionService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         // 获取查询参数
         String keyword = params.get("keyword") != null ? params.get("keyword").toString() : null;
         Integer status = params.get("status") != null ? Integer.parseInt(params.get("status").toString()) : null;
-        Integer type = params.get("departmentId") != null ? Integer.parseInt(params.get("departmentId").toString()) : null;
+        Integer type = params.get("type") != null ? Integer.parseInt(params.get("type").toString()) : null;
         Boolean isSensitive = params.get("isSensitive") != null ? Boolean.parseBoolean(params.get("isSensitive").toString()) : null;
 
         // 执行分页查询
@@ -67,8 +69,13 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     @Override
     @Transactional
     public boolean addPermission(Permission permission) {
+        // 检查权限编码是否已存在
+        Long count = lambdaQuery().eq(Permission::getCode, permission.getCode()).count();
+        if (count > 0) {
+            throw new ApiException("权限编码已存在");
+        }
 
-        return this.updateById(permission);
+        return this.save(permission);
     }
 
     @Override
@@ -101,7 +108,9 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         }
 
         // 检查是否有子权限
-        long childCount = count(lambdaQuery().eq(Permission::getParentId, id));
+        long childCount = permissionMapper.selectCount(
+                new QueryWrapper<Permission>().eq("parent_id", id)
+        );
         if (childCount > 0) {
             throw new RuntimeException("该权限下存在子权限，无法删除");
         }
@@ -113,6 +122,31 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         }
 
         return permissionMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean batchDeletePermissions(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return false;
+        }
+        // 检查是否有子权限
+        for (Long id : ids) {
+            Long childCount = permissionMapper.countByParentId(id);
+            if (childCount > 0) {
+                throw new ApiException("存在子权限，无法删除");
+            }
+        }
+
+        // 检查权限是否被角色使用
+        for (Long id : ids) {
+            int roleCount = rolePermissionMapper.countByPermissionId(id);
+            if (roleCount > 0) {
+                throw new ApiException("权限已经与角色绑定，不可删除");
+            }
+        }
+
+        return removeBatchByIds(ids);
     }
 
     @Override
