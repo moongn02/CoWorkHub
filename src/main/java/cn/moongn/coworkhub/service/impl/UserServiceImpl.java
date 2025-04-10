@@ -112,7 +112,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<UserDTO> getUserList() {
-        List<User> userList = userMapper.selectList(null);
+        List<User> userList = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getStatus, 1));
         return userList.stream()
                 .filter(Objects::nonNull)
                 .map(this::formatUser)
