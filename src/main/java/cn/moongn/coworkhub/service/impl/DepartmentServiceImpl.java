@@ -1,5 +1,6 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.DepartmentMapper;
 import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.Department;
@@ -157,7 +158,12 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
     @Override
     @Transactional
     public boolean addDepartment(Department department) {
-        return this.updateById(department);
+        // 如果parentId为null，设置为0
+        if (department.getParentId() == null) {
+            department.setParentId(0L);
+        }
+
+        return departmentMapper.insert(department) > 0;
     }
 
     @Override
@@ -175,6 +181,31 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
         return this.updateById(department);
     }
 
+    @Override
+    @Transactional
+    public boolean deleteDepartment(Long id) {
+        int childCount = departmentMapper.countChildDepartments(id);
+        if (childCount > 0) {
+            throw new ApiException("存在子部门，无法删除");
+        }
+
+        return departmentMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean batchDeleteDepartments(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return false;
+        }
+
+        for (Long projectId : ids) {
+            deleteDepartment(projectId);
+        }
+
+        return true;
+    }
+
     /**
      * 将Department实体转换为DepartmentDTO
      */
@@ -190,6 +221,8 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
             User leader = userMapper.getById(department.getLeaderId());
             if (leader != null) {
                 dto.setLeaderName(leader.getRealName());
+            } else {
+                dto.setLeaderName("-");
             }
         }
 

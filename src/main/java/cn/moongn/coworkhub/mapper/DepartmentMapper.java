@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -28,4 +29,9 @@ public interface DepartmentMapper extends BaseMapper<Department> {
      */
     List<Department> selectAllDepartments();
 
+    /**
+     * 获取指定部门的子部门数量
+     */
+    @Select("SELECT COUNT(*) FROM department WHERE parent_id = #{parentId}")
+    int countChildDepartments(@Param("parentId") Long parentId);
 }

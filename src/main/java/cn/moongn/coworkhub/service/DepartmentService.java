@@ -56,7 +56,21 @@ public interface DepartmentService extends IService<Department> {
      boolean updateDepartment(Department department);
 
      /**
+      * 删除部门
+      * @param id 部门ID
+      * @return 是否成功
+      */
+     boolean deleteDepartment(Long id);
+
+     /**
       * 更新部门状态
       */
      boolean updateDepartmentStatus(Long id, Integer status);
+
+     /**
+      * 批量删除部门
+      * @param ids 部门ID列表
+      * @return 是否成功
+      */
+     boolean batchDeleteDepartments(List<Long> ids);
 }

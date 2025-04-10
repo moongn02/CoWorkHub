@@ -99,6 +99,28 @@ public class DepartmentController {
     }
 
     /**
+     * 删除部门
+     */
+    @DeleteMapping("/{id}")
+    public Result<Boolean> deleteDepartment(@PathVariable Long id) {
+        boolean success = departmentService.deleteDepartment(id);
+        return success ? Result.success(true) : Result.error("删除部门失败");
+    }
+
+    /**
+     * 批量删除部门
+     */
+    @DeleteMapping("/batch")
+    public Result<Boolean> batchDeleteDepartments(@RequestBody Map<String, List<Long>> requestMap) {
+        List<Long> ids = requestMap.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("未提供部门ID");
+        }
+        boolean success = departmentService.batchDeleteDepartments(ids);
+        return success ? Result.success(true) : Result.error("批量删除失败");
+    }
+
+    /**
      * 获取部门树形结构（用于级联选择器）
      */
     @GetMapping("/tree")
