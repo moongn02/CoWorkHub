@@ -115,4 +115,25 @@ public class PermissionController {
         List<PermissionDTO> permissions = permissionService.getParentPermissions();
         return Result.success(permissions);
     }
+
+    /**
+     * 获取权限树
+     */
+    @GetMapping("/tree")
+    public Result<List<Permission>> getPermissionTree() {
+        List<Permission> tree = permissionService.getPermissionTree();
+        return Result.success(tree);
+    }
+
+    /**
+     * 根据ID列表获取权限树
+     */
+    @PostMapping("/tree_by_ids")
+    public Result<List<Permission>> getPermissionTreeByIds(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("获取错误");
+        }
+        List<Permission> tree = permissionService.getPermissionTreeByIds(ids);
+        return Result.success(tree);
+    }
 }

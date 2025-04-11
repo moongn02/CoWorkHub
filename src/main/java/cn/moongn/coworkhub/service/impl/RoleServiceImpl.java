@@ -1,8 +1,10 @@
 package cn.moongn.coworkhub.service.impl;
 
+import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.RoleMapper;
 import cn.moongn.coworkhub.mapper.RolePermissionMapper;
 import cn.moongn.coworkhub.mapper.PermissionMapper;
+import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.Role;
 import cn.moongn.coworkhub.model.Permission;
 import cn.moongn.coworkhub.model.dto.RoleDTO;
@@ -26,6 +28,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private final RoleMapper roleMapper;
     private final RolePermissionMapper rolePermissionMapper;
     private final PermissionMapper permissionMapper;
+    private final UserMapper userMapper;
 
     @Override
     public String getRoleName(Long roleId) {
@@ -78,7 +81,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     @Transactional
     public boolean addRole(Role role) {
-        return this.updateById(role);
+        return roleMapper.insert(role) > 0;
     }
 
     @Override
@@ -94,6 +97,51 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         role.setId(id);
         role.setStatus(status);
         return this.updateById(role);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteRoleWithPermissions(Long roleId) {
+        // 1. 检查角色是否被用户使用
+        if (isRoleUsedByUsers(roleId)) {
+            throw new ApiException("该角色已被用户使用，不能删除");
+        }
+
+        // 2. 删除角色权限关联
+        rolePermissionMapper.deleteByRoleId(roleId);
+
+        // 3. 删除角色
+        return roleMapper.deleteById(roleId) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean batchDeleteRolesWithPermissions(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return false;
+        }
+
+        // 1. 检查角色是否被用户使用
+        for (Long roleId : roleIds) {
+            if (isRoleUsedByUsers(roleId)) {
+                throw new IllegalStateException("角色ID为" + roleId + "的角色已被用户使用，不能删除");
+            }
+        }
+
+        // 2. 批量删除角色权限关联
+        for (Long roleId : roleIds) {
+            rolePermissionMapper.deleteByRoleId(roleId);
+        }
+
+        // 3. 批量删除角色
+        return roleMapper.deleteBatchIds(roleIds) > 0;
+    }
+
+    @Override
+    public boolean isRoleUsedByUsers(Long roleId) {
+        // 查询是否有用户使用此角色
+        Integer count = userMapper.countUsersByRoleId(roleId);
+        return count != null && count > 0;
     }
 
     /**

@@ -6,6 +6,7 @@ import cn.moongn.coworkhub.mapper.RolePermissionMapper;
 import cn.moongn.coworkhub.model.Permission;
 import cn.moongn.coworkhub.model.dto.PermissionDTO;
 import cn.moongn.coworkhub.service.PermissionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,9 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -154,6 +153,116 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         List<Permission> permissions = permissionMapper.selectParentPermissions();
         return permissions.stream()
                 .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Permission> getPermissionTree() {
+        // 1. 获取所有状态为可用的权限
+        LambdaQueryWrapper<Permission> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Permission::getStatus, 1); // 假设 1 表示可用状态
+        List<Permission> allPermissions = this.list(wrapper);
+
+        // 2. 构建树形结构
+        return buildPermissionTree(allPermissions);
+    }
+
+    /**
+     * 构建权限树
+     * @param allPermissions 所有权限列表
+     * @return 树形结构的权限列表
+     */
+    private List<Permission> buildPermissionTree(List<Permission> allPermissions) {
+        // 创建一个Map用于存储所有权限，key为权限id
+        Map<Long, Permission> permissionMap = new HashMap<>();
+        // 创建根节点列表
+        List<Permission> rootList = new ArrayList<>();
+
+        // 将所有权限放入Map中
+        for (Permission permission : allPermissions) {
+            permissionMap.put(permission.getId(), permission);
+        }
+
+        // 构建树形结构
+        for (Permission permission : allPermissions) {
+            Long parentId = permission.getParentId();
+            if (parentId == null || parentId == 0) {
+                // 如果是根节点，直接添加到根节点列表
+                rootList.add(permission);
+            } else {
+                // 如果不是根节点，找到其父节点并添加到父节点的children中
+                Permission parentPermission = permissionMap.get(parentId);
+                if (parentPermission != null) {
+                    if (parentPermission.getChildren() == null) {
+                        parentPermission.setChildren(new ArrayList<>());
+                    }
+                    parentPermission.getChildren().add(permission);
+                }
+            }
+        }
+
+        return rootList;
+    }
+
+    @Override
+    public List<Permission> getPermissionTreeByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 1. 获取所有指定ID的权限
+        List<Permission> permissions = this.listByIds(ids);
+        if (permissions.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 2. A. 创建一个集合用于保存所有需要的权限ID（包括父权限）
+        Set<Long> allNeededIds = new HashSet<>(ids);
+
+        // 2. B. 添加所有父权限ID
+        for (Permission permission : permissions) {
+            Long parentId = permission.getParentId();
+            // 递归查找所有父权限
+            while (parentId != null && parentId > 0) {
+                allNeededIds.add(parentId);
+                Permission parent = this.getById(parentId);
+                if (parent != null) {
+                    parentId = parent.getParentId();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // 3. 获取所有需要的权限
+        List<Permission> allPermissions = this.listByIds(allNeededIds);
+
+        // 4. 构建树形结构
+        return buildPermissionTree(allPermissions);
+    }
+
+    @Override
+    public List<Long> filterLeafPermissions(List<Long> allPermissionIds) {
+        if (allPermissionIds == null || allPermissionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 获取所有权限，检查哪些是父权限
+        List<Permission> permissions = permissionMapper.selectBatchIds(allPermissionIds);
+
+        // 获取所有选中权限的父权限ID
+        Set<Long> parentIds = new HashSet<>();
+        for (Permission permission : permissions) {
+            // 如果这个权限有子权限，将其ID添加到父权限集合
+            Long count = permissionMapper.countByParentId(permission.getId());
+            if (count > 0) {
+                parentIds.add(permission.getId());
+            }
+        }
+
+        // 过滤掉父权限，只保留子权限（叶子节点）
+        return allPermissionIds.stream()
+                .filter(id -> !parentIds.contains(id))
                 .collect(Collectors.toList());
     }
 

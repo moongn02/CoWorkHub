@@ -3,6 +3,8 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.Role;
 import cn.moongn.coworkhub.model.dto.RoleDTO;
+import cn.moongn.coworkhub.service.PermissionService;
+import cn.moongn.coworkhub.service.RolePermissionService;
 import cn.moongn.coworkhub.service.RoleService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import java.util.Map;
 public class RoleController {
 
     private final RoleService roleService;
+    private final RolePermissionService rolePermissionService;
+    private final PermissionService permissionService;
 
     /**
      * 分页获取角色列表
@@ -59,11 +63,32 @@ public class RoleController {
     }
 
     /**
+     * 为角色分配权限
+     */
+    @PostMapping("/assign")
+    public Result<Boolean> assignPermissions(@RequestParam Long roleId, @RequestBody List<Long> permissionIds) {
+        boolean success = false;
+        if (roleId == null || permissionIds != null || !permissionIds.isEmpty()) {
+            List<Long> leafPermissionIds = filterLeafPermissions(permissionIds);
+            success = rolePermissionService.assignPermissions(roleId, leafPermissionIds);
+        }
+
+        return success ? Result.success(true) : Result.error("权限分配失败");
+    }
+
+    /**
      * 添加角色
      */
     @PostMapping("/add")
     public Result<Boolean> addRole(@RequestBody Role role) {
         boolean success = roleService.addRole(role);
+
+        if (success && role.getPermissionIds() != null && !role.getPermissionIds().isEmpty()) {
+            // 只保存子权限，过滤掉半选中的父权限
+            List<Long> leafPermissionIds = filterLeafPermissions(role.getPermissionIds());
+            rolePermissionService.assignPermissions(role.getId(), leafPermissionIds);
+        }
+
         return success ? Result.success(true) : Result.error("添加角色失败");
     }
 
@@ -74,6 +99,13 @@ public class RoleController {
     public Result<Boolean> updateRole(@PathVariable Long id, @RequestBody Role role) {
         role.setId(id);
         boolean success = roleService.updateRole(role);
+
+        if (success) {
+            // 只保存子权限，过滤掉半选中的父权限
+            List<Long> leafPermissionIds = filterLeafPermissions(role.getPermissionIds());
+            rolePermissionService.assignPermissions(id, leafPermissionIds);
+        }
+
         return success ? Result.success(true) : Result.error("更新角色失败");
     }
 
@@ -91,7 +123,7 @@ public class RoleController {
      */
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteRole(@PathVariable Long id) {
-        boolean success = roleService.removeById(id);
+        boolean success = roleService.deleteRoleWithPermissions(id);
         return success ? Result.success(true) : Result.error("删除角色失败");
     }
 
@@ -101,7 +133,25 @@ public class RoleController {
     @DeleteMapping("/batch")
     public Result<Boolean> batchDeleteRoles(@RequestBody Map<String, List<Long>> params) {
         List<Long> ids = params.get("ids");
-        boolean success = roleService.removeByIds(ids);
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("未提供角色ID");
+        }
+
+        boolean success = roleService.batchDeleteRolesWithPermissions(ids);
         return success ? Result.success(true) : Result.error("批量删除角色失败");
+    }
+
+    /**
+     * 过滤出叶子节点权限ID（子权限）
+     * @param allPermissionIds 所有选中的权限ID（包括全选和半选）
+     * @return 叶子节点权限ID
+     */
+    private List<Long> filterLeafPermissions(List<Long> allPermissionIds) {
+        if (allPermissionIds == null || allPermissionIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 获取所有权限的父子关系
+        return permissionService.filterLeafPermissions(allPermissionIds);
     }
 }

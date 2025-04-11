@@ -67,4 +67,23 @@ public interface PermissionService extends IService<Permission> {
      * @return 是否成功
      */
     boolean batchDeletePermissions(List<Long> ids);
+
+    /**
+     * 获取权限树
+     * @return 权限树
+     */
+    List<Permission> getPermissionTree();
+
+    /**
+     * 根据权限IDs获取权限树
+     * @return 权限树
+     */
+    List<Permission> getPermissionTreeByIds(List<Long> ids);
+
+    /**
+     * 过滤出叶子节点权限ID（子权限）
+     * @param allPermissionIds 所有选中的权限ID
+     * @return 叶子节点权限ID
+     */
+    List<Long> filterLeafPermissions(List<Long> allPermissionIds);
 }

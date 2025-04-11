@@ -1,9 +1,12 @@
 package cn.moongn.coworkhub.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @TableName("role")
@@ -13,6 +16,9 @@ public class Role {
     private String name;
     private String description;
     private Integer status;
+
+    @TableField(exist = false)
+    private List<Long> permissionIds;
 }
 
 /*

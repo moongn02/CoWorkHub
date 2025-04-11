@@ -43,4 +43,25 @@ public interface RoleService extends IService<Role> {
      * 获取角色名称
      */
     String getRoleName(Long roleId);
+
+    /**
+     * 删除角色（包括其权限关联）
+     * @param roleId 角色ID
+     * @return 是否成功
+     */
+    boolean deleteRoleWithPermissions(Long roleId);
+
+    /**
+     * 批量删除角色（包括其权限关联）
+     * @param roleIds 角色ID列表
+     * @return 是否成功
+     */
+    boolean batchDeleteRolesWithPermissions(List<Long> roleIds);
+
+    /**
+     * 检查角色是否被用户使用
+     * @param roleId 角色ID
+     * @return 是否被使用
+     */
+    boolean isRoleUsedByUsers(Long roleId);
 }

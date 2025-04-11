@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
@@ -26,4 +27,12 @@ public interface UserMapper extends BaseMapper<User> {
             @Param("status") Integer status,
             @Param("deptId") Long deptId,
             @Param("roleId") Integer roleId);
+
+    /**
+     * 统计使用指定角色的用户数量
+     * @param roleId 角色ID
+     * @return 用户数量
+     */
+    @Select("SELECT COUNT(*) FROM user WHERE role_id = #{roleId}")
+    Integer countUsersByRoleId(@Param("roleId") Long roleId);
 }
