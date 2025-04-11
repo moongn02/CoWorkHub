@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Data
 @TableName("user")
 public class User {
-    @TableId(type = IdType.ASSIGN_UUID)
+    @TableId(type = IdType.AUTO)
     private Long id;
     private String username;
     private String password;

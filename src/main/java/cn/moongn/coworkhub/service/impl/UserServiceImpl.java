@@ -180,7 +180,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean updateUser(User user) {
         // 检查用户名是否已存在
         User existUser = getByUsername(user.getUsername());
-        if (existUser != null) {
+        if (existUser != null && !existUser.getId().equals(user.getId())) {
             throw new ApiException("用户名已存在");
         }
 
