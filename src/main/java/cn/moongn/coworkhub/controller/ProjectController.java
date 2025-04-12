@@ -3,6 +3,7 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.Project;
 import cn.moongn.coworkhub.model.dto.ProjectDTO;
+import cn.moongn.coworkhub.model.dto.ProjectTreeDTO;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.ProjectService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -111,5 +112,14 @@ public class ProjectController {
     public Result<List<ProjectDTO>> getParentProjects() {
         List<ProjectDTO> projects = projectService.getParentProjects();
         return Result.success(projects);
+    }
+
+    /**
+     * 获取项目树结构
+     */
+    @GetMapping("/tree")
+    public Result<List<ProjectTreeDTO>> getProjectTree() {
+        List<ProjectTreeDTO> tree = projectService.getProjectTree();
+        return Result.success(tree);
     }
 }

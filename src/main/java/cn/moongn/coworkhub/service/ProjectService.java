@@ -2,6 +2,7 @@ package cn.moongn.coworkhub.service;
 
 import cn.moongn.coworkhub.model.Project;
 import cn.moongn.coworkhub.model.dto.ProjectDTO;
+import cn.moongn.coworkhub.model.dto.ProjectTreeDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -54,6 +55,12 @@ public interface ProjectService extends IService<Project> {
      * @return 是否成功
      */
     boolean updateProjectStatus(Long id, Integer status);
+
+    /**
+     * 获取项目树结构
+     * @return 树形结构的项目列表
+     */
+    List<ProjectTreeDTO> getProjectTree();
 
     /**
      * 获取父级项目列表（用于下拉选择）

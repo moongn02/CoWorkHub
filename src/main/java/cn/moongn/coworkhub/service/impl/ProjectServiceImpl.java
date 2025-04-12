@@ -8,6 +8,7 @@ import cn.moongn.coworkhub.model.Department;
 import cn.moongn.coworkhub.model.Project;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.ProjectDTO;
+import cn.moongn.coworkhub.model.dto.ProjectTreeDTO;
 import cn.moongn.coworkhub.service.ProjectService;
 import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -153,6 +154,60 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
         return projects.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProjectTreeDTO> getProjectTree() {
+        // 1. 获取所有项目
+        List<Project> allProjects = this.list();
+
+        // 2. 转换为DTO
+        List<ProjectTreeDTO> dtoList = allProjects.stream()
+                .map(this::convertToTreeDTO)
+                .collect(Collectors.toList());
+
+        // 3. 构建树形结构
+        return buildProjectTree(dtoList);
+    }
+
+    private ProjectTreeDTO convertToTreeDTO(Project project) {
+        ProjectTreeDTO dto = new ProjectTreeDTO();
+        dto.setId(project.getId());
+        dto.setName(project.getName());
+        dto.setParentId(project.getParentId());
+        return dto;
+    }
+
+    private List<ProjectTreeDTO> buildProjectTree(List<ProjectTreeDTO> allProjects) {
+        // 创建一个Map，key为项目id，value为对应的DTO对象
+        Map<Long, ProjectTreeDTO> projectMap = new HashMap<>();
+        // 创建根节点列表
+        List<ProjectTreeDTO> rootList = new ArrayList<>();
+
+        // 将所有项目放入Map中
+        for (ProjectTreeDTO project : allProjects) {
+            projectMap.put(project.getId(), project);
+        }
+
+        // 构建树形结构
+        for (ProjectTreeDTO project : allProjects) {
+            Long parentId = project.getParentId();
+            if (parentId == null || parentId == 0) {
+                // 如果是根节点，直接添加到根节点列表
+                rootList.add(project);
+            } else {
+                // 如果不是根节点，找到其父节点并添加到父节点的children中
+                ProjectTreeDTO parentProject = projectMap.get(parentId);
+                if (parentProject != null) {
+                    if (parentProject.getChildren() == null) {
+                        parentProject.setChildren(new ArrayList<>());
+                    }
+                    parentProject.getChildren().add(project);
+                }
+            }
+        }
+
+        return rootList;
     }
 
     /**
