@@ -2,7 +2,10 @@ package cn.moongn.coworkhub.service;
 
 import cn.moongn.coworkhub.model.Task;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.Map;
 
 public interface TaskService extends IService<Task> {
     /**
@@ -18,4 +21,13 @@ public interface TaskService extends IService<Task> {
      * @return 任务DTO
      */
     TaskDTO convertToDTO(Task task);
+
+    /**
+     * 分页查询任务
+     * @param pageNum 当前页
+     * @param pageSize 每页大小
+     * @param params 查询参数
+     * @return 任务分页结果
+     */
+    Page<TaskDTO> pageTasks(Integer pageNum, Integer pageSize, Map<String, Object> params);
 }
