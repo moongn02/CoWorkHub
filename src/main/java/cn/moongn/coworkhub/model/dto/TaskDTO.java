@@ -2,7 +2,7 @@ package cn.moongn.coworkhub.model.dto;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class TaskDTO {
@@ -24,6 +24,6 @@ public class TaskDTO {
     private String statusText;
     private Integer priority;
     private String priorityText;
-    private Date actualStartTime;
-    private Date expectedTime;
+    private LocalDateTime actualStartTime;
+    private LocalDateTime expectedTime;
 }

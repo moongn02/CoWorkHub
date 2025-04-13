@@ -33,7 +33,8 @@ public class TaskController {
         boolean success = taskService.createTask(task);
 
         if (success) {
-            TaskDTO taskDTO = taskService.convertToDTO(task);
+            Task savedTask = taskService.getById(task.getId());
+            TaskDTO taskDTO = taskService.convertToDTO(savedTask);
             return Result.success(taskDTO);
         } else {
             return Result.error("创建任务失败");

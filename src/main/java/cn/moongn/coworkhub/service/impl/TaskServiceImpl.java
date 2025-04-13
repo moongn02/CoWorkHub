@@ -98,13 +98,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 设置优先级文本
         switch (task.getPriority()) {
             case 1:
-                dto.setPriorityText("高");
+                dto.setPriorityText("高优先级");
                 break;
             case 2:
-                dto.setPriorityText("中");
+                dto.setPriorityText("中优先级");
                 break;
             case 3:
-                dto.setPriorityText("低");
+                dto.setPriorityText("低优先级");
                 break;
             default:
                 dto.setPriorityText("未知优先级");
