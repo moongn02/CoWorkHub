@@ -76,7 +76,9 @@ public class TaskController {
             @RequestParam(required = false) Long departmentId,
             @RequestParam(required = false) Long parentTaskId,
             @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) Integer priority) {
+            @RequestParam(required = false) Integer priority,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("id", id);
@@ -89,6 +91,8 @@ public class TaskController {
         params.put("parentTaskId", parentTaskId);
         params.put("status", status);
         params.put("priority", priority);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
 
         Page<TaskDTO> page = taskService.pageTasks(pageNum, pageSize, params);
         return Result.success(page);

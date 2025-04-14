@@ -5,10 +5,7 @@ import cn.moongn.coworkhub.mapper.DepartmentMapper;
 import cn.moongn.coworkhub.mapper.ProjectMapper;
 import cn.moongn.coworkhub.mapper.TaskMapper;
 import cn.moongn.coworkhub.mapper.UserMapper;
-import cn.moongn.coworkhub.model.Department;
-import cn.moongn.coworkhub.model.Project;
-import cn.moongn.coworkhub.model.Task;
-import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.model.*;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
 import cn.moongn.coworkhub.service.TaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -128,6 +125,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         Integer priority = (Integer) params.get("priority");
         if (priority != null) {
             queryWrapper.eq(Task::getPriority, priority);
+        }
+
+        // 添加期望完成时间范围搜索
+        String startDate = (String) params.get("startDate");
+        String endDate = (String) params.get("endDate");
+        if (StringUtils.isNotBlank(startDate) && StringUtils.isNotBlank(endDate)) {
+            queryWrapper.between(Task::getExpectedTime, startDate + "00:00:00", endDate + " 23:59:59");
         }
 
         // 添加排序
