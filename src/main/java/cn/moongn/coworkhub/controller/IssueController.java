@@ -5,7 +5,7 @@ import cn.moongn.coworkhub.model.Issue;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.service.IssueService;
 import cn.moongn.coworkhub.service.UserService;
-import cn.moongn.coworkhub.vo.IssueDTO;
+import cn.moongn.coworkhub.model.dto.IssueDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
