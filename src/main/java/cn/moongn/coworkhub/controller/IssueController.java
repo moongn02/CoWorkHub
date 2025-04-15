@@ -67,6 +67,29 @@ public class IssueController {
     }
 
     /**
+     * 修改问题
+     */
+    @PutMapping("/update")
+    public Result<Boolean> updateIssue(@RequestBody Issue issue) {
+        if (issue == null || issue.getId() == null) {
+            return Result.error("问题ID不能为空");
+        }
+
+        try {
+            // 检查问题是否存在
+            Issue existingIssue = issueService.getById(issue.getId());
+            if (existingIssue == null) {
+                return Result.error("问题不存在");
+            }
+
+            boolean success = issueService.updateById(issue);
+            return success ? Result.success() : Result.error("更新问题失败");
+        } catch (Exception e) {
+            return Result.error("修改问题失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 获取问题详情
      */
     @GetMapping("/{id}")
