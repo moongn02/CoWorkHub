@@ -178,8 +178,8 @@ public class TaskController {
     public Result<Boolean> updateExpectedTime(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         try {
             String expectedTime = (String) params.get("expectedTime");
-            if (expectedTime == null || expectedTime.isEmpty()) {
-                return Result.error("期望完成时间不能为空");
+            if (expectedTime != null && expectedTime.contains("/")) {
+                expectedTime = expectedTime.replace("/", "-");
             }
 
             String comment = (String) params.get("comment");
