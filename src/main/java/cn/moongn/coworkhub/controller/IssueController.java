@@ -3,6 +3,7 @@ package cn.moongn.coworkhub.controller;
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.model.Issue;
 import cn.moongn.coworkhub.model.IssueComment;
+import cn.moongn.coworkhub.model.Task;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.IssueCommentDTO;
 import cn.moongn.coworkhub.service.IssueCommentService;
@@ -80,6 +81,61 @@ public class IssueController {
             return Result.success(issueDTO);
         } catch (Exception e) {
             return Result.error("获取问题详情失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取问题关联的任务详情
+     */
+    @GetMapping("/related_task/{id}")
+    public Result<Map<String, Object>> getRelatedTask(@PathVariable Long id) {
+        try {
+            Issue issue = issueService.getById(id);
+            if (issue == null) {
+                return Result.error("问题不存在");
+            }
+
+            Long relatedTaskId = issue.getTaskId();
+            if (relatedTaskId == null) {
+                return Result.success(null);
+            }
+
+            Task task = taskService.getById(relatedTaskId);
+            if (task == null) {
+                return Result.success(null);
+            }
+
+            // 获取处理人信息
+            String handlerName = "";
+            if (task.getHandlerId() != null) {
+                User handler = userService.getById(task.getHandlerId());
+                if (handler != null) {
+                    handlerName = handler.getRealName();
+                }
+            }
+
+            // 获取状态文本
+            String statusText = switch (task.getStatus()) {
+                case 1 -> "已分派";
+                case 2 -> "处理中";
+                case 3 -> "已解决";
+                case 4 -> "已暂停";
+                case 5 -> "已关闭";
+                default -> "未知";
+            };
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", task.getId());
+            result.put("title", task.getTitle());
+            result.put("status", task.getStatus());
+            result.put("statusText", statusText);
+            result.put("handlerId", task.getHandlerId());
+            result.put("handlerName", handlerName);
+            result.put("expectedTime", task.getExpectedTime());
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取关联任务详情失败: " + e.getMessage());
         }
     }
 
