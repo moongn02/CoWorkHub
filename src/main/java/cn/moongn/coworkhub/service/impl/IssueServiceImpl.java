@@ -1,11 +1,7 @@
 package cn.moongn.coworkhub.service.impl;
 
 import cn.moongn.coworkhub.mapper.IssueMapper;
-import cn.moongn.coworkhub.model.Department;
-import cn.moongn.coworkhub.model.Issue;
-import cn.moongn.coworkhub.model.Project;
-import cn.moongn.coworkhub.model.Task;
-import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.model.*;
 import cn.moongn.coworkhub.service.DepartmentService;
 import cn.moongn.coworkhub.service.IssueService;
 import cn.moongn.coworkhub.service.ProjectService;

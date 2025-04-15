@@ -7,6 +7,7 @@ import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.IssueCommentDTO;
 import cn.moongn.coworkhub.service.IssueCommentService;
 import cn.moongn.coworkhub.service.IssueService;
+import cn.moongn.coworkhub.service.TaskService;
 import cn.moongn.coworkhub.service.UserService;
 import cn.moongn.coworkhub.model.dto.IssueDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,6 +29,7 @@ import java.util.Map;
 public class IssueController {
 
     private final UserService userService;
+    private final TaskService taskService;
     private final IssueService issueService;
     private final IssueCommentService issueCommentService;
 
@@ -182,6 +184,65 @@ public class IssueController {
             return Result.success(success);
         } catch (Exception e) {
             return Result.error("转派问题失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 修改关联任务
+     */
+    @PutMapping("/relate_task/{id}")
+    public Result<Boolean> updateRelatedTask(@PathVariable Long id, @RequestBody Map<String, Object> params) {
+        try {
+            Long taskId = null;
+            if (params.get("taskId") != null) {
+                taskId = Long.valueOf(params.get("taskId").toString());
+            }
+
+            String comment = (String) params.get("comment");
+
+            BigDecimal workHours = BigDecimal.ZERO; // 默认为0
+            if (params.containsKey("workHours") && params.get("workHours") != null) {
+                workHours = new BigDecimal(params.get("workHours").toString());
+            }
+
+            // 更新问题关联任务
+            Issue issue = issueService.getById(id);
+            if (issue == null) {
+                return Result.error("问题不存在");
+            }
+
+            // 验证任务是否存在（如果指定了taskId）
+            if (taskId != null) {
+                boolean taskExists = taskService.getById(taskId) != null;
+                if (!taskExists) {
+                    return Result.error("关联任务不存在");
+                }
+            }
+
+            // 更新关联任务ID（可以设置为null表示取消关联）
+            issue.setTaskId(taskId);
+            boolean success = issueService.updateById(issue);
+
+            // 添加备注和工时
+            if (success && comment != null && !comment.isEmpty()) {
+                IssueComment issueComment = new IssueComment();
+                issueComment.setIssueId(id);
+                issueComment.setContent(comment);
+
+                User currentUser = userService.getCurrentUser();
+                if (currentUser == null) {
+                    return Result.error("系统错误，请联系管理员");
+                }
+                Long currentUserId = currentUser.getId();
+                issueComment.setCreatorId(currentUserId);
+
+                issueComment.setWorkHours(workHours);
+                issueCommentService.addIssueComment(issueComment);
+            }
+
+            return Result.success(success);
+        } catch (Exception e) {
+            return Result.error("更新问题关联任务失败: " + e.getMessage());
         }
     }
 
