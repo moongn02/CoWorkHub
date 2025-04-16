@@ -54,6 +54,35 @@ public class TaskController {
     }
 
     /**
+     * 修改任务
+     */
+    @PutMapping("/update")
+    public Result<Boolean> updateTask(@RequestBody Task task) {
+        if (task == null || task.getId() == null) {
+            return Result.error("任务ID不能为空");
+        }
+
+        try {
+            // 检查任务是否存在
+            Task existingTask = taskService.getById(task.getId());
+            if (existingTask == null) {
+                return Result.error("任务不存在");
+            }
+
+            boolean success = taskService.updateById(task);
+
+            if (success) {
+                return Result.success();
+            } else {
+                return Result.error("修改任务失败");
+            }
+
+        } catch (Exception e) {
+            return Result.error("修改任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 获取任务详情
      */
     @GetMapping("/{id}")
