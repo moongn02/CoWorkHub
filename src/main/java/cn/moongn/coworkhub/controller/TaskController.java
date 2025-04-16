@@ -200,6 +200,67 @@ public class TaskController {
     }
 
     /**
+     * 拆分子任务
+     */
+    @PostMapping("/split/{id}")
+    public Result<Boolean> splitTask(@PathVariable Long id, @RequestBody List<Map<String, Object>> data) {
+        try {
+            List<Task> subTasks = new ArrayList<>();
+
+            for (Map<String, Object> subTaskData : data) {
+                Task subTask = new Task();
+
+                // 设置子任务的基本属性
+                if (subTaskData.get("title") != null) {
+                    subTask.setTitle(subTaskData.get("title").toString());
+                }
+
+                // 设置部门ID
+                if (subTaskData.get("departmentId") != null) {
+                    subTask.setDepartmentId(Long.valueOf(subTaskData.get("departmentId").toString()));
+                }
+
+                // 设置处理人
+                if (subTaskData.get("handlerId") != null) {
+                    subTask.setHandlerId(Long.valueOf(subTaskData.get("handlerId").toString()));
+                }
+
+                // 设置期望完成时间
+                if (subTaskData.get("expectedTime") != null) {
+                    // 将字符串日期转换为LocalDateTime
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime dateTime = LocalDateTime.parse(subTaskData.get("expectedTime").toString(), formatter);
+                    subTask.setExpectedTime(dateTime);
+                }
+
+                // 设置内容
+                if (subTaskData.get("content") != null) {
+                    subTask.setContent(subTaskData.get("content").toString());
+                }
+
+                User currentUser = userService.getCurrentUser();
+                if (currentUser == null) {
+                    return Result.error("系统错误，请联系管理员");
+                }
+                Long currentUserId = currentUser.getId();
+                subTask.setCreatorId(currentUserId);
+
+                subTasks.add(subTask);
+            }
+
+            boolean success = taskService.splitTask(id, subTasks);
+
+            if (success) {
+                return Result.success();
+            } else {
+                return Result.error("任务拆分失败");
+            }
+        } catch (Exception e) {
+            return Result.error("任务拆分失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 修改期望完成时间
      */
     @PutMapping("/expected_time/{id}")

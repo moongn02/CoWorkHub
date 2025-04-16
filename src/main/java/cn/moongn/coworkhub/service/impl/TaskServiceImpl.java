@@ -29,6 +29,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     private final ProjectMapper projectMapper;
     private final DepartmentMapper departmentMapper;
 
+    /**
+     * 创建任务
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean createTask(Task task) {
@@ -63,7 +66,52 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         return this.save(task);
     }
 
-    // 获取关联问题
+    /**
+     * 拆分子任务
+     */
+    @Override
+    @Transactional
+    public boolean splitTask(Long parentTaskId, List<Task> subTasks) {
+        try {
+            // 获取父任务
+            Task parentTask = this.getById(parentTaskId);
+            if (parentTask == null) {
+                throw new RuntimeException("父任务不存在");
+            }
+
+            for (Task subTask : subTasks) {
+                // 继承父任务的部分属性
+                subTask.setParentTaskId(parentTaskId);
+                subTask.setProjectId(parentTask.getProjectId());
+                subTask.setAcceptorId(parentTask.getAcceptorId());
+                subTask.setPriority(parentTask.getPriority());
+                subTask.setStatus(1); // 设置为"已分派"状态
+                subTask.setCreateTime(new Date());
+                subTask.setUpdateTime(new Date());
+
+                // 如果子任务没有设置标题，使用父任务的标题
+                if (subTask.getTitle() == null || subTask.getTitle().isEmpty()) {
+                    subTask.setTitle(parentTask.getTitle() + "-子任务");
+                }
+
+                // 如果子任务没有设置内容，使用父任务的内容
+                if (subTask.getContent() == null || subTask.getContent().isEmpty()) {
+                    subTask.setContent(parentTask.getContent());
+                }
+
+                // 保存子任务
+                this.save(subTask);
+            }
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 获取关联问题
+     */
     @Override
     public List<Issue> getIssuesByTaskId(Long taskId) {
         return issueMapper.selectByTaskId(taskId);

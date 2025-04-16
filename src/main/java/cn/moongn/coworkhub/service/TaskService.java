@@ -18,6 +18,14 @@ public interface TaskService extends IService<Task> {
     boolean createTask(Task task);
 
     /**
+     * 拆分子任务
+     * @param parentTaskId 父任务ID
+     * @param subTasks 子任务列表
+     * @return 是否成功
+     */
+    boolean splitTask(Long parentTaskId, List<Task> subTasks);
+
+    /**
      * 获取任务的关联问题
      * @param taskId 任务ID
      * @return 是否成功
