@@ -1,15 +1,15 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
+import cn.moongn.coworkhub.common.utils.IssueActivityRecorder;
+import cn.moongn.coworkhub.constant.enums.IssueActivityType;
 import cn.moongn.coworkhub.model.Issue;
 import cn.moongn.coworkhub.model.IssueComment;
 import cn.moongn.coworkhub.model.Task;
 import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.model.dto.IssueActivityDTO;
 import cn.moongn.coworkhub.model.dto.IssueCommentDTO;
-import cn.moongn.coworkhub.service.IssueCommentService;
-import cn.moongn.coworkhub.service.IssueService;
-import cn.moongn.coworkhub.service.TaskService;
-import cn.moongn.coworkhub.service.UserService;
+import cn.moongn.coworkhub.service.*;
 import cn.moongn.coworkhub.model.dto.IssueDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,8 @@ public class IssueController {
     private final TaskService taskService;
     private final IssueService issueService;
     private final IssueCommentService issueCommentService;
+    private final IssueActivityService issueActivityService;
+    private final IssueActivityRecorder issueActivityRecorder;
 
     /**
      * 创建问题
@@ -55,6 +57,8 @@ public class IssueController {
         try {
             boolean success = issueService.createIssue(issue);
             if (success) {
+                issueActivityRecorder.record(issue.getId(), IssueActivityType.CREATE);
+
                 Issue savedIssue = issueService.getById(issue.getId());
                 IssueDTO issueDTO = issueService.convertToDTO(savedIssue);
                 return Result.success(issueDTO);
@@ -83,7 +87,14 @@ public class IssueController {
             }
 
             boolean success = issueService.updateById(issue);
-            return success ? Result.success() : Result.error("更新问题失败");
+
+            if (success) {
+                issueActivityRecorder.record(issue.getId(), IssueActivityType.UPDATE);
+                return Result.success();
+            } else {
+                return Result.error("修改问题失败");
+            }
+
         } catch (Exception e) {
             return Result.error("修改问题失败: " + e.getMessage());
         }
@@ -138,14 +149,7 @@ public class IssueController {
             }
 
             // 获取状态文本
-            String statusText = switch (task.getStatus()) {
-                case 1 -> "已分派";
-                case 2 -> "处理中";
-                case 3 -> "已解决";
-                case 4 -> "已暂停";
-                case 5 -> "已关闭";
-                default -> "未知";
-            };
+            String statusText = getStatusText(task.getStatus());
 
             Map<String, Object> result = new HashMap<>();
             result.put("id", task.getId());
@@ -160,6 +164,20 @@ public class IssueController {
         } catch (Exception e) {
             return Result.error("获取关联任务详情失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 辅助方法：获取状态文本
+     */
+    private String getStatusText(Integer status) {
+        return switch (status) {
+            case 1 -> "已分派";
+            case 2 -> "处理中";
+            case 3 -> "已解决";
+            case 4 -> "已暂停";
+            case 5 -> "已关闭";
+            default -> "未知";
+        };
     }
 
     /**
@@ -206,6 +224,11 @@ public class IssueController {
 
                 issueComment.setWorkHours(workHours);
                 issueCommentService.addIssueComment(issueComment);
+            }
+
+            if (success){
+                String statusText = getStatusText(status);
+                issueActivityRecorder.record(id, IssueActivityType.CHANGE_STATUS, statusText);
             }
 
             return Result.success(success);
@@ -260,6 +283,12 @@ public class IssueController {
                 issueCommentService.addIssueComment(issueComment);
             }
 
+            if (success) {
+                User handler = userService.getById(handlerId);
+                String handlerName = handler != null ? handler.getRealName() : "未知用户";
+                issueActivityRecorder.record(id, IssueActivityType.TRANSFER, handlerName);
+            }
+
             return Result.success(success);
         } catch (Exception e) {
             return Result.error("转派问题失败: " + e.getMessage());
@@ -284,7 +313,7 @@ public class IssueController {
                 workHours = new BigDecimal(params.get("workHours").toString());
             }
 
-            // 更新问题关联任务
+            // 修改问题关联任务
             Issue issue = issueService.getById(id);
             if (issue == null) {
                 return Result.error("问题不存在");
@@ -298,7 +327,7 @@ public class IssueController {
                 }
             }
 
-            // 更新关联任务ID（可以设置为null表示取消关联）
+            // 修改关联任务ID（可以设置为null表示取消关联）
             issue.setTaskId(taskId);
             boolean success = issueService.updateById(issue);
 
@@ -319,9 +348,13 @@ public class IssueController {
                 issueCommentService.addIssueComment(issueComment);
             }
 
+            if (success) {
+                issueActivityRecorder.record(id, IssueActivityType.RELATED_TASK, taskId);
+            }
+
             return Result.success(success);
         } catch (Exception e) {
-            return Result.error("更新问题关联任务失败: " + e.getMessage());
+            return Result.error("修改问题关联任务失败: " + e.getMessage());
         }
     }
 
@@ -373,6 +406,10 @@ public class IssueController {
                 issueCommentService.addIssueComment(issueComment);
             }
 
+            if (success) {
+                issueActivityRecorder.record(id, IssueActivityType.UPDATE_EXPECTED_TIME, expectedTime);
+            }
+
             return Result.success(success);
         } catch (Exception e) {
             return Result.error("修改期望完成时间失败: " + e.getMessage());
@@ -411,7 +448,10 @@ public class IssueController {
 
             boolean success = issueCommentService.addIssueComment(issueComment);
             if (success) {
+                issueActivityRecorder.record(id, IssueActivityType.ADD_COMMENT);
+
                 IssueCommentDTO dto = issueCommentService.convertToDTO(issueComment);
+
                 return Result.success(dto);
             } else {
                 return Result.error("添加备注失败");
@@ -443,6 +483,23 @@ public class IssueController {
             return Result.success(page);
         } catch (Exception e) {
             return Result.error("分页获取问题备注失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取问题进度
+     */
+    @GetMapping("/activities/{id}")
+    public Result<List<IssueActivityDTO>> getIssueActivities(@PathVariable Long id) {
+        if (id == null) {
+            return Result.error("问题ID不能为空");
+        }
+
+        try {
+            List<IssueActivityDTO> activities = issueActivityService.getActivitiesByIssueId(id);
+            return Result.success(activities);
+        } catch (Exception e) {
+            return Result.error("获取问题进度失败: " + e.getMessage());
         }
     }
 
