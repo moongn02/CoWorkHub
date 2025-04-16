@@ -1,10 +1,12 @@
 package cn.moongn.coworkhub.service;
 
+import cn.moongn.coworkhub.model.Issue;
 import cn.moongn.coworkhub.model.Task;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 
 public interface TaskService extends IService<Task> {
@@ -14,6 +16,13 @@ public interface TaskService extends IService<Task> {
      * @return 是否成功
      */
     boolean createTask(Task task);
+
+    /**
+     * 获取任务的关联问题
+     * @param taskId 任务ID
+     * @return 是否成功
+     */
+    List<Issue> getIssuesByTaskId(Long taskId);
 
     /**
      * 将Task实体转换为DTO

@@ -156,7 +156,6 @@ public class IssueController {
             result.put("title", task.getTitle());
             result.put("status", task.getStatus());
             result.put("statusText", statusText);
-            result.put("handlerId", task.getHandlerId());
             result.put("handlerName", handlerName);
             result.put("expectedTime", task.getExpectedTime());
 
@@ -173,9 +172,10 @@ public class IssueController {
         return switch (status) {
             case 1 -> "已分派";
             case 2 -> "处理中";
-            case 3 -> "已解决";
-            case 4 -> "已暂停";
-            case 5 -> "已关闭";
+            case 3 -> "已完成";
+            case 4 -> "测试中";
+            case 5 -> "已暂停";
+            case 6 -> "已关闭";
             default -> "未知";
         };
     }

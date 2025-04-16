@@ -1,10 +1,7 @@
 package cn.moongn.coworkhub.service.impl;
 
 import cn.moongn.coworkhub.common.exception.ApiException;
-import cn.moongn.coworkhub.mapper.DepartmentMapper;
-import cn.moongn.coworkhub.mapper.ProjectMapper;
-import cn.moongn.coworkhub.mapper.TaskMapper;
-import cn.moongn.coworkhub.mapper.UserMapper;
+import cn.moongn.coworkhub.mapper.*;
 import cn.moongn.coworkhub.model.*;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
 import cn.moongn.coworkhub.service.TaskService;
@@ -27,6 +24,7 @@ import java.util.stream.Collectors;
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
 
     private final TaskMapper taskMapper;
+    private final IssueMapper issueMapper;
     private final UserMapper userMapper;
     private final ProjectMapper projectMapper;
     private final DepartmentMapper departmentMapper;
@@ -63,6 +61,12 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
         // 执行保存
         return this.save(task);
+    }
+
+    // 获取关联问题
+    @Override
+    public List<Issue> getIssuesByTaskId(Long taskId) {
+        return issueMapper.selectByTaskId(taskId);
     }
 
     /**

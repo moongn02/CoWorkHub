@@ -1,9 +1,7 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
-import cn.moongn.coworkhub.model.Task;
-import cn.moongn.coworkhub.model.TaskComment;
-import cn.moongn.coworkhub.model.User;
+import cn.moongn.coworkhub.model.*;
 import cn.moongn.coworkhub.model.dto.TaskCommentDTO;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
 import cn.moongn.coworkhub.service.TaskCommentService;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -303,6 +302,55 @@ public class TaskController {
     public Result<List<TaskCommentDTO>> getTaskComments(@PathVariable Long id) {
         List<TaskCommentDTO> comments = taskCommentService.getTaskComments(id);
         return Result.success(comments);
+    }
+
+    /**
+     * 辅助方法：获取状态文本
+     */
+    private String getStatusText(Integer status) {
+        return switch (status) {
+            case 1 -> "已分派";
+            case 2 -> "处理中";
+            case 3 -> "已解决";
+            case 4 -> "已暂停";
+            case 5 -> "已关闭";
+            default -> "未知";
+        };
+    }
+
+    /**
+     * 获取任务的关联问题
+     */
+    @GetMapping("/related_issues/{id}")
+    public Result<List<Map<String, Object>>> getRelatedIssues(@PathVariable Long id) {
+        try {
+            List<Issue> issues = taskService.getIssuesByTaskId(id);
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Issue issue : issues) {
+                // 获取处理人信息
+                String handlerName = "";
+                if (issue.getHandlerId() != null) {
+                    User handler = userService.getById(issue.getHandlerId());
+                    if (handler != null) {
+                        handlerName = handler.getRealName();
+                    }
+                }
+
+                Map<String, Object> issueMap = new HashMap<>();
+                issueMap.put("id", issue.getId());
+                issueMap.put("title", issue.getTitle());
+                issueMap.put("handlerName", handlerName);
+                issueMap.put("status", issue.getStatus());
+                issueMap.put("statusText", getStatusText(issue.getStatus()));
+                issueMap.put("expectedTime", issue.getExpectedTime());
+                result.add(issueMap);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取关联问题失败: " + e.getMessage());
+        }
     }
 
     /**
