@@ -33,6 +33,20 @@ public interface TaskService extends IService<Task> {
     List<Issue> getIssuesByTaskId(Long taskId);
 
     /**
+     * 根据父任务ID获取任务的子任务
+     * @param parentTaskId 任务ID
+     * @return 子任务列表
+     */
+    List<Task> getSubTasks(Long parentTaskId);
+
+    /**
+     * 根据任务ID获取任务的父任务
+     * @param taskId 任务ID
+     * @return 父任务列表
+     */
+    Task getParentTask(Long taskId);
+
+    /**
      * 将Task实体转换为DTO
      * @param task 任务实体
      * @return 任务DTO

@@ -118,6 +118,26 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     }
 
     /**
+     * 根据父任务ID获取任务的子任务
+     */
+    @Override
+    public List<Task> getSubTasks(Long parentTaskId) {
+        return taskMapper.selectByParentTaskId(parentTaskId);
+    }
+
+    /**
+     * 根据任务ID获取任务的父任务
+     */
+    @Override
+    public Task getParentTask(Long taskId) {
+        Task task = this.getById(taskId);
+        if (task != null && task.getParentTaskId() != null) {
+            return this.getById(task.getParentTaskId());
+        }
+        return null;
+    }
+
+    /**
      * 分页查询任务
      */
     @Override

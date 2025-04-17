@@ -415,6 +415,93 @@ public class TaskController {
     }
 
     /**
+     * 根据任务ID获取任务的父任务
+     */
+    @GetMapping("/parent_task/{taskId}")
+    public Result<Map<String, Object>> getParentTask(@PathVariable Long taskId) {
+        try {
+            Task task = taskService.getById(taskId);
+            if (task == null) {
+                return Result.error("任务不存在");
+            }
+
+            if (task.getParentTaskId() == null) {
+                return Result.success(null);
+            }
+
+            Task parentTask = taskService.getById(task.getParentTaskId());
+            if (parentTask == null) {
+                return Result.success(null);
+            }
+
+            // 获取处理人信息
+            String handlerName = "";
+            if (parentTask.getHandlerId() != null) {
+                User handler = userService.getById(parentTask.getHandlerId());
+                if (handler != null) {
+                    handlerName = handler.getRealName();
+                }
+            }
+
+            // 获取状态文本
+            String statusText = getStatusText(parentTask.getStatus());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", parentTask.getId());
+            result.put("title", parentTask.getTitle());
+            result.put("status", parentTask.getStatus());
+            result.put("statusText", statusText);
+            result.put("handlerId", parentTask.getHandlerId());
+            result.put("handlerName", handlerName);
+            result.put("expectedTime", parentTask.getExpectedTime());
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取父任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根据父任务ID获取任务的子任务
+     */
+    @GetMapping("/sub_tasks/{taskId}")
+    public Result<List<Map<String, Object>>> getSubTasks(@PathVariable Long taskId) {
+        try {
+            List<Task> subTasks = taskService.getSubTasks(taskId);
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Task subTask : subTasks) {
+                // 获取处理人信息
+                String handlerName = "";
+                if (subTask.getHandlerId() != null) {
+                    User handler = userService.getById(subTask.getHandlerId());
+                    if (handler != null) {
+                        handlerName = handler.getRealName();
+                    }
+                }
+
+                // 获取状态文本
+                String statusText = getStatusText(subTask.getStatus());
+
+                Map<String, Object> taskMap = new HashMap<>();
+                taskMap.put("id", subTask.getId());
+                taskMap.put("title", subTask.getTitle());
+                taskMap.put("status", subTask.getStatus());
+                taskMap.put("statusText", statusText);
+                taskMap.put("handlerId", subTask.getHandlerId());
+                taskMap.put("handlerName", handlerName);
+                taskMap.put("expectedTime", subTask.getExpectedTime());
+
+                result.add(taskMap);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取子任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 分页获取任务备注
      */
     @GetMapping("/comments/page/{id}")
