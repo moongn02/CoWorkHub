@@ -1,9 +1,13 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
+import cn.moongn.coworkhub.common.utils.TaskActivityRecorder;
+import cn.moongn.coworkhub.constant.enums.TaskActivityType;
 import cn.moongn.coworkhub.model.*;
+import cn.moongn.coworkhub.model.dto.TaskActivityDTO;
 import cn.moongn.coworkhub.model.dto.TaskCommentDTO;
 import cn.moongn.coworkhub.model.dto.TaskDTO;
+import cn.moongn.coworkhub.service.TaskActivityService;
 import cn.moongn.coworkhub.service.TaskCommentService;
 import cn.moongn.coworkhub.service.TaskService;
 import cn.moongn.coworkhub.service.UserService;
@@ -27,6 +31,8 @@ public class TaskController {
     private final UserService userService;
     private final TaskService taskService;
     private final TaskCommentService taskCommentService;
+    private final TaskActivityService taskActivityService;
+    private final TaskActivityRecorder taskActivityRecorder;
 
     /**
      * 创建任务
@@ -44,6 +50,8 @@ public class TaskController {
         boolean success = taskService.createTask(task);
 
         if (success) {
+            taskActivityRecorder.record(task.getId(), TaskActivityType.CREATE);
+
             Task savedTask = taskService.getById(task.getId());
             TaskDTO taskDTO = taskService.convertToDTO(savedTask);
             return Result.success(taskDTO);
@@ -71,6 +79,8 @@ public class TaskController {
             boolean success = taskService.updateById(task);
 
             if (success) {
+                taskActivityRecorder.record(task.getId(), TaskActivityType.UPDATE);
+
                 return Result.success();
             } else {
                 return Result.error("修改任务失败");
@@ -141,6 +151,11 @@ public class TaskController {
                 taskCommentService.addTaskComment(taskComment);
             }
 
+            if (success) {
+                User handler = userService.getById(handlerId);
+                taskActivityRecorder.record(id, TaskActivityType.TRANSFER, handler.getRealName());
+            }
+
             return Result.success(success);
         } catch (Exception e) {
             return Result.error("转派任务失败: " + e.getMessage());
@@ -191,6 +206,11 @@ public class TaskController {
 
                 taskComment.setWorkHours(workHours);
                 taskCommentService.addTaskComment(taskComment);
+            }
+
+            if (success) {
+                String statusText = getStatusText(status);
+                taskActivityRecorder.record(id, TaskActivityType.CHANGE_STATUS, statusText);
             }
 
             return Result.success(success);
@@ -251,6 +271,8 @@ public class TaskController {
             boolean success = taskService.splitTask(id, subTasks);
 
             if (success) {
+                taskActivityRecorder.record(id, TaskActivityType.SPLIT_TASK);
+
                 return Result.success();
             } else {
                 return Result.error("任务拆分失败");
@@ -308,6 +330,10 @@ public class TaskController {
                 taskCommentService.addTaskComment(taskComment);
             }
 
+            if (success) {
+                taskActivityRecorder.record(id, TaskActivityType.UPDATE_EXPECTED_TIME, expectedTime);
+            }
+
             return Result.success(success);
         } catch (Exception e) {
             return Result.error("修改期望完成时间失败: " + e.getMessage());
@@ -346,6 +372,8 @@ public class TaskController {
 
             boolean success = taskCommentService.addTaskComment(taskComment);
             if (success) {
+                taskActivityRecorder.record(id, TaskActivityType.ADD_COMMENT);
+
                 TaskCommentDTO dto = taskCommentService.convertToDTO(taskComment);
                 return Result.success(dto);
             } else {
@@ -498,6 +526,19 @@ public class TaskController {
             return Result.success(result);
         } catch (Exception e) {
             return Result.error("获取子任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取任务进度
+     */
+    @GetMapping("/activities/{taskId}")
+    public Result<List<TaskActivityDTO>> getTaskActivities(@PathVariable Long taskId) {
+        try {
+            List<TaskActivityDTO> activities = taskActivityService.getActivitiesByTaskId(taskId);
+            return Result.success(activities);
+        } catch (Exception e) {
+            return Result.error("获取任务进度失败: " + e.getMessage());
         }
     }
 

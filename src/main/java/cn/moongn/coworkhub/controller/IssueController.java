@@ -2,7 +2,9 @@ package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.common.utils.IssueActivityRecorder;
+import cn.moongn.coworkhub.common.utils.TaskActivityRecorder;
 import cn.moongn.coworkhub.constant.enums.IssueActivityType;
+import cn.moongn.coworkhub.constant.enums.TaskActivityType;
 import cn.moongn.coworkhub.model.Issue;
 import cn.moongn.coworkhub.model.IssueComment;
 import cn.moongn.coworkhub.model.Task;
@@ -35,6 +37,7 @@ public class IssueController {
     private final IssueCommentService issueCommentService;
     private final IssueActivityService issueActivityService;
     private final IssueActivityRecorder issueActivityRecorder;
+    private final TaskActivityRecorder taskActivityRecorder;
 
     /**
      * 创建问题
@@ -54,19 +57,20 @@ public class IssueController {
             issue.setStatus(1);
         }
 
-        try {
-            boolean success = issueService.createIssue(issue);
-            if (success) {
-                issueActivityRecorder.record(issue.getId(), IssueActivityType.CREATE);
+        boolean success = issueService.createIssue(issue);
 
-                Issue savedIssue = issueService.getById(issue.getId());
-                IssueDTO issueDTO = issueService.convertToDTO(savedIssue);
-                return Result.success(issueDTO);
-            } else {
-                return Result.error("创建问题失败");
-            }
-        } catch (Exception e) {
-            return Result.error("创建问题失败: " + e.getMessage());
+        if (success && issue.getTaskId() != null) {
+            taskActivityRecorder.record(issue.getTaskId(), TaskActivityType.CREATE_ISSUE, issue.getId());
+        }
+
+        if (success) {
+            issueActivityRecorder.record(issue.getId(), IssueActivityType.CREATE);
+
+            Issue savedIssue = issueService.getById(issue.getId());
+            IssueDTO issueDTO = issueService.convertToDTO(savedIssue);
+            return Result.success(issueDTO);
+        } else {
+            return Result.error("创建问题失败");
         }
     }
 
