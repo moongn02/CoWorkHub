@@ -227,6 +227,12 @@ public class TaskController {
         try {
             List<Task> subTasks = new ArrayList<>();
 
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("系统错误，请联系管理员");
+            }
+            Long currentUserId = currentUser.getId();
+
             for (Map<String, Object> subTaskData : data) {
                 Task subTask = new Task();
 
@@ -258,11 +264,6 @@ public class TaskController {
                     subTask.setContent(subTaskData.get("content").toString());
                 }
 
-                User currentUser = userService.getCurrentUser();
-                if (currentUser == null) {
-                    return Result.error("系统错误，请联系管理员");
-                }
-                Long currentUserId = currentUser.getId();
                 subTask.setCreatorId(currentUserId);
 
                 subTasks.add(subTask);
@@ -271,7 +272,13 @@ public class TaskController {
             boolean success = taskService.splitTask(id, subTasks);
 
             if (success) {
+                // 记录父任务的拆分活动
                 taskActivityRecorder.record(id, TaskActivityType.SPLIT_TASK);
+
+                // 为每个子任务记录创建活动
+                for (Task subTask : subTasks) {
+                    taskActivityRecorder.record(subTask.getId(), TaskActivityType.CREATE_FROM_SPLIT, id);
+                }
 
                 return Result.success();
             } else {
