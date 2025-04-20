@@ -121,6 +121,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User getUserByEmail(String email) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getEmail, email);
+        return this.getOne(queryWrapper);
+    }
+
+    @Override
     public Page<UserDTO> pageUsers(int current, int size, Map<String, Object> params) {
         // 创建分页对象
         Page<User> page = new Page<>(current, size);

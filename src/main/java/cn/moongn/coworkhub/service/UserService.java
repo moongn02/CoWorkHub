@@ -19,6 +19,7 @@ public interface UserService extends IService<User> {
     void update(User user);
     void changePassword(@Valid @RequestBody ResetPasswordVO resetPasswordVO);
     List<UserDTO> getUserList();
+    User getUserByEmail(String email);
 
     /**
      * 分页查询用户列表
