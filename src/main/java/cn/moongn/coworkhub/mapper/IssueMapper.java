@@ -18,6 +18,7 @@ public interface IssueMapper extends BaseMapper<Issue> {
     @Select("<script>"
             + "SELECT i.* FROM issue i "
             + "WHERE i.handler_id = #{userId} "
+            + "AND i.status IN (1, 2) "
             + "ORDER BY i.create_time DESC"
             + "</script>")
     List<Issue> selectCurrentUserIssues(@Param("userId") Long userId);
