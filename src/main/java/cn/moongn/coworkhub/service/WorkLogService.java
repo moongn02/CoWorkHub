@@ -2,6 +2,7 @@ package cn.moongn.coworkhub.service;
 
 import cn.moongn.coworkhub.model.WorkLog;
 import cn.moongn.coworkhub.model.dto.WorkLogDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.time.LocalDate;
@@ -40,4 +41,9 @@ public interface WorkLogService extends IService<WorkLog> {
      * 计算当月工作日数量（不包括周末和节假日）
      */
     int calculateWorkdaysInCurrentMonth();
+
+    /**
+     * 获取团队成员日志列表
+     */
+    Page<WorkLogDTO> pagePersonnelWorkLogs(Integer pageNum, Integer pageSize, Map<String, Object> params);
 }

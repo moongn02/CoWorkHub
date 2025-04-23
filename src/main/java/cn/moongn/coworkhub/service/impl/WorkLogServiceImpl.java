@@ -9,6 +9,7 @@ import cn.moongn.coworkhub.model.dto.WorkLogDTO;
 import cn.moongn.coworkhub.service.UserService;
 import cn.moongn.coworkhub.service.WorkLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,6 +155,84 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         return workdays;
+    }
+
+    @Override
+    public Page<WorkLogDTO> pagePersonnelWorkLogs(Integer pageNum, Integer pageSize, Map<String, Object> params) {
+        User currentUser = userService.getCurrentUser();
+        if (currentUser == null) {
+            throw new ApiException("用户未登录");
+        }
+
+        // 创建分页对象
+        Page<WorkLog> page = new Page<>(pageNum, pageSize);
+
+        // 构建查询条件
+        LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 处理用户ID列表参数
+        String userIdsStr = (String) params.get("userIds");
+        if (userIdsStr != null && !userIdsStr.isEmpty()) {
+            List<Long> userIds = Arrays.stream(userIdsStr.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+
+            if (!userIds.isEmpty()) {
+                queryWrapper.in(WorkLog::getUserId, userIds);
+            }
+        }
+
+        // 处理日期范围参数
+        String startDate = (String) params.get("startDate");
+        if (startDate != null && !startDate.isEmpty()) {
+            queryWrapper.ge(WorkLog::getLogDate, LocalDate.parse(startDate));
+        }
+
+        String endDate = (String) params.get("endDate");
+        if (endDate != null && !endDate.isEmpty()) {
+            queryWrapper.le(WorkLog::getLogDate, LocalDate.parse(endDate));
+        }
+
+        // 处理日志类型参数
+        Integer logType = (Integer) params.get("logType");
+        if (logType != null) {
+            queryWrapper.eq(WorkLog::getType, logType);
+        }
+
+        // 排序
+        queryWrapper.orderByDesc(WorkLog::getLogDate);
+
+        // 执行分页查询
+        Page<WorkLog> logPage = this.page(page, queryWrapper);
+
+        // 获取所有相关用户信息，用于显示用户名
+        Map<Long, String> userIdToNameMap = new HashMap<>();
+        if (!logPage.getRecords().isEmpty()) {
+            List<Long> allUserIds = logPage.getRecords().stream()
+                    .map(WorkLog::getUserId)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            List<User> users = userService.listByIds(allUserIds);
+            for (User user : users) {
+                userIdToNameMap.put(user.getId(), user.getRealName());
+            }
+        }
+
+        // 转换为DTO
+        Page<WorkLogDTO> dtoPage = new Page<>(logPage.getCurrent(), logPage.getSize(), logPage.getTotal());
+
+        List<WorkLogDTO> dtoList = logPage.getRecords().stream().map(log -> {
+            WorkLogDTO dto = convertToDTO(log);
+            dto.setUsername(userIdToNameMap.getOrDefault(log.getUserId(), "未知用户"));
+            return dto;
+        }).collect(Collectors.toList());
+
+        dtoPage.setRecords(dtoList);
+
+        return dtoPage;
     }
 
     /**
