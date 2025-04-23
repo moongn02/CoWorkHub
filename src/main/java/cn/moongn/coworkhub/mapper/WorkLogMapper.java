@@ -1,6 +1,7 @@
 package cn.moongn.coworkhub.mapper;
 
 import cn.moongn.coworkhub.model.WorkLog;
+import cn.moongn.coworkhub.model.dto.WorkLogDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -16,6 +17,18 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      */
     @Select("SELECT COUNT(*) FROM work_log WHERE user_id = #{userId} AND YEAR(log_date) = #{year} AND MONTH(log_date) = #{month}")
     int getMonthlyLogCount(@Param("userId") Long userId, @Param("year") int year, @Param("month") int month);
+
+    /**
+     * 获取今日工作日志
+     */
+    @Select("SELECT * FROM work_log WHERE user_id = #{userId} AND log_date = #{today} LIMIT 1")
+    WorkLogDTO selectTodayLog(@Param("userId") Long userId, @Param("today") LocalDate today);
+
+    /**
+     * 统计本周工作日志数量
+     */
+    @Select("SELECT COUNT(*) FROM work_log WHERE user_id = #{userId} AND log_date BETWEEN #{weekStart} AND #{weekEnd}")
+    int countWeekWorkLogs(@Param("userId") Long userId, @Param("weekStart") LocalDate weekStart, @Param("weekEnd") LocalDate weekEnd);
 
     /**
      * 按条件查询工作日志列表

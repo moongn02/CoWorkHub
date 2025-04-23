@@ -550,6 +550,46 @@ public class TaskController {
     }
 
     /**
+     * 获取当前用户的任务列表
+     */
+    @GetMapping("/current_user")
+    public Result<List<TaskDTO>> getCurrentUserTasks() {
+        try {
+            // 获取当前用户
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+
+            // 获取当前用户的所有任务
+            List<TaskDTO> tasks = taskService.getCurrentUserTasks(currentUser.getId());
+            return Result.success(tasks);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取未完成任务数量
+     */
+    @GetMapping("/unfinished_count")
+    public Result<Integer> getUnfinishedTasksCount() {
+        try {
+            // 获取当前用户
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+
+            // 获取当前用户未完成任务的数量
+            int count = taskService.countUnfinishedTasks(currentUser.getId());
+            return Result.success(count);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * 分页获取任务备注
      */
     @GetMapping("/comments/page/{id}")

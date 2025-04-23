@@ -31,11 +31,26 @@ public class IssueServiceImpl extends ServiceImpl<IssueMapper, Issue> implements
     private final ProjectService projectService;
     private final DepartmentService departmentService;
     private final TaskService taskService;
+    private final IssueMapper issueMapper;
 
     @Override
     @Transactional
     public boolean createIssue(Issue issue) {
         return this.save(issue);
+    }
+
+    @Override
+    public List<IssueDTO> getCurrentUserIssues(Long userId) {
+        List<Issue> issues = issueMapper.selectCurrentUserIssues(userId);
+
+        return issues.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countUnresolvedIssues(Long userId) {
+        return issueMapper.countUnresolvedIssues(userId);
     }
 
     @Override

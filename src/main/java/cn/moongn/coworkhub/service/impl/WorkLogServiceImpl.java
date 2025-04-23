@@ -31,6 +31,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
+    public WorkLogDTO getTodayLog(Long userId) {
+        LocalDate today = LocalDate.now();
+        WorkLogDTO workLog = workLogMapper.selectTodayLog(userId, today);
+        if (workLog != null) {
+            setTypeTextAndDateStr(workLog);
+            workLog.setUsername(userService.getById(userId).getUsername());
+        }
+        return workLog;
+    }
+
+    @Override
     public List<WorkLogDTO> getWorkLogsByCurrentUser(LocalDate startDate, LocalDate endDate,
                                                      Integer year, Integer month,
                                                      Integer type) {
@@ -261,5 +272,32 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         return dto;
+    }
+
+    /**
+     * 设置日志类型文本和日期字符串
+     */
+    private void setTypeTextAndDateStr(WorkLogDTO workLog) {
+        // 设置日志类型文本
+        if (workLog.getType() != null) {
+            switch (workLog.getType()) {
+                case 1:
+                    workLog.setTypeText("日志");
+                    break;
+                case 2:
+                    workLog.setTypeText("周志");
+                    break;
+                case 3:
+                    workLog.setTypeText("月志");
+                    break;
+                default:
+                    workLog.setTypeText("未知");
+            }
+        }
+
+        // 设置日期字符串
+        if (workLog.getLogDate() != null) {
+            workLog.setLogDateStr(workLog.getLogDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
     }
 }

@@ -1,8 +1,10 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
+import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.WorkLog;
 import cn.moongn.coworkhub.model.dto.WorkLogDTO;
+import cn.moongn.coworkhub.service.UserService;
 import cn.moongn.coworkhub.service.WorkLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,28 @@ import java.util.Map;
 public class WorkLogController {
 
     private final WorkLogService workLogService;
+    private final UserService userService;
+
+    /**
+     * 获取今日工作日志
+     */
+    @GetMapping("/today")
+    public Result<WorkLogDTO> getTodayLog() {
+        try {
+            // 获取当前用户
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+
+            // 获取当天的工作日志
+            WorkLogDTO todayLog = workLogService.getTodayLog(currentUser.getId());
+            return Result.success(todayLog);
+        } catch (Exception e) {
+            log.error("获取今日工作日志失败", e);
+            return Result.error(e.getMessage());
+        }
+    }
 
     /**
      * 获取工作日志列表

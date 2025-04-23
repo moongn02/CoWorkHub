@@ -10,6 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 public interface WorkLogService extends IService<WorkLog> {
+
+    /**
+     * 获取今日工作日志
+     * @param userId 用户ID
+     * @return 今日工作日志
+     */
+    WorkLogDTO getTodayLog(Long userId);
+
     /**
      * 获取当前用户的工作日志列表
      */

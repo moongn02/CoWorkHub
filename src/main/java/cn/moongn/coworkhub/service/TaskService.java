@@ -54,6 +54,20 @@ public interface TaskService extends IService<Task> {
     TaskDTO convertToDTO(Task task);
 
     /**
+     * 获取当前用户的所有任务
+     * @param userId 用户ID
+     * @return 任务列表
+     */
+    List<TaskDTO> getCurrentUserTasks(Long userId);
+
+    /**
+     * 统计当前用户未完成任务数量
+     * @param userId 用户ID
+     * @return 未完成任务数量
+     */
+    int countUnfinishedTasks(Long userId);
+
+    /**
      * 分页查询任务
      * @param pageNum 当前页
      * @param pageSize 每页大小

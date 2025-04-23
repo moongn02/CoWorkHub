@@ -137,6 +137,20 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         return null;
     }
 
+    @Override
+    public List<TaskDTO> getCurrentUserTasks(Long userId) {
+        List<Task> tasks = taskMapper.selectCurrentUserTasks(userId);
+
+        return tasks.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countUnfinishedTasks(Long userId) {
+        return taskMapper.countUnfinishedTasks(userId);
+    }
+
     /**
      * 分页查询任务
      */

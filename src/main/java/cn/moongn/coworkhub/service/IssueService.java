@@ -5,6 +5,7 @@ import cn.moongn.coworkhub.model.dto.IssueDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 
 public interface IssueService extends IService<Issue> {
@@ -22,6 +23,20 @@ public interface IssueService extends IService<Issue> {
      * @return IssueDTO
      */
     IssueDTO convertToDTO(Issue issue);
+
+    /**
+     * 获取当前用户的所有问题
+     * @param userId 用户ID
+     * @return 问题列表
+     */
+    List<IssueDTO> getCurrentUserIssues(Long userId);
+
+    /**
+     * 统计当前用户未解决问题数量
+     * @param userId 用户ID
+     * @return 未解决问题数量
+     */
+    int countUnresolvedIssues(Long userId);
 
     /**
      * 分页查询问题

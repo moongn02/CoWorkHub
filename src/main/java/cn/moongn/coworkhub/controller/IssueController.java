@@ -508,6 +508,48 @@ public class IssueController {
     }
 
     /**
+     * 获取当前用户的问题列表
+     */
+    @GetMapping("/current_user")
+    public Result<List<IssueDTO>> getCurrentUserIssues() {
+        try {
+            // 获取当前用户
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+
+            // 获取当前用户的所有问题
+            List<IssueDTO> issues = issueService.getCurrentUserIssues(currentUser.getId());
+            return Result.success(issues);
+        } catch (Exception e) {
+            log.error("获取当前用户问题列表失败", e);
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取未解决问题数量
+     */
+    @GetMapping("/unresolved_count")
+    public Result<Integer> getUnresolvedIssuesCount() {
+        try {
+            // 获取当前用户
+            User currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return Result.error("用户未登录");
+            }
+
+            // 获取当前用户未解决问题的数量
+            int count = issueService.countUnresolvedIssues(currentUser.getId());
+            return Result.success(count);
+        } catch (Exception e) {
+            log.error("获取未解决问题数量失败", e);
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * 分页查询问题
      */
     @GetMapping("/page_list")
