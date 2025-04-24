@@ -21,7 +21,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
     /**
      * 获取今日工作日志
      */
-    @Select("SELECT * FROM work_log WHERE user_id = #{userId} AND log_date = #{today} LIMIT 1")
+    @Select("SELECT * FROM work_log WHERE user_id = #{userId} AND log_date = #{today} AND type = 1 LIMIT 1")
     WorkLogDTO selectTodayLog(@Param("userId") Long userId, @Param("today") LocalDate today);
 
     /**
