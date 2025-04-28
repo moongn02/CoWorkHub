@@ -28,6 +28,10 @@ public class Task {
     private LocalDateTime actualStartTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime expectedTime;
-    private Date createTime;
-    private Date updateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime lastStatusChangedTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime lastAssignedTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }
