@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.moongn.coworkhub.mapper.ScheduledJobLogMapper">
+    <select id="selectLogPage" resultType="cn.moongn.coworkhub.model.ScheduledJobLog">
+        SELECT
+        id,
+        job_id AS jobId,
+        execution_time AS executionTime,
+        status,
+        message,
+        created_time AS createdTime
+        FROM scheduled_job_logs
+        <where>
+            <if test="jobId != null">
+                AND job_id = #{jobId}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY execution_time DESC
+    </select>
+</mapper>
