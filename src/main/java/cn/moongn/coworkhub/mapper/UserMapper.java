@@ -7,10 +7,19 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     User getById(@Param("id") Long id);
     User getByUsername(@Param("username") String username);
+
+    /**
+     * 查询所有激活状态的用户
+     * 假设用户状态字段为status，1表示正常/激活状态
+     */
+    @Select("SELECT * FROM user WHERE status = 1")
+    List<User> selectActiveUsers();
 
     /**
      * 分页查询用户
