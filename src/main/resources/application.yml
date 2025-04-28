@@ -7,6 +7,11 @@ spring:
     url: jdbc:mysql://localhost:3309/coworkhub?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
+    hikari:
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
   
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -42,6 +47,24 @@ spring:
         max-idle: 10
         min-idle: 1
         time-between-eviction-runs: 10s
+
+  quartz:
+    job-store-type: jdbc  # 使用JDBC存储
+    jdbc:
+      initialize-schema: never  # 不自动初始化表结构，我们已经手动创建了
+    properties:
+      org.quartz.scheduler.instanceName: CoWorkHubScheduler
+      org.quartz.scheduler.instanceId: AUTO
+      org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
+      org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+      org.quartz.jobStore.tablePrefix: QRTZ_
+      org.quartz.jobStore.isClustered: true
+      org.quartz.jobStore.clusterCheckinInterval: 20000
+      org.quartz.jobStore.useProperties: false
+      org.quartz.threadPool.class: org.quartz.simpl.SimpleThreadPool
+      org.quartz.threadPool.threadCount: 10
+      org.quartz.threadPool.threadPriority: 5
+
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: cn.moongn.coworkhub.model
