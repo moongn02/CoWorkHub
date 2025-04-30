@@ -14,7 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,8 +59,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 设置初始状态为已分派
         task.setStatus(1);
 
-        // 设置创建时间
-        task.setCreateTime(new Date());
+        // 设置创建时间和更新时间
+        task.setCreateTime(LocalDateTime.now());
+        task.setUpdateTime(LocalDateTime.now());
 
         // 执行保存
         return this.save(task);
@@ -86,8 +87,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 subTask.setAcceptorId(parentTask.getAcceptorId());
                 subTask.setPriority(parentTask.getPriority());
                 subTask.setStatus(1); // 设置为"已分派"状态
-                subTask.setCreateTime(new Date());
-                subTask.setUpdateTime(new Date());
+                subTask.setCreateTime(LocalDateTime.now());
+                subTask.setUpdateTime(LocalDateTime.now());
 
                 // 如果子任务没有设置标题，使用父任务的标题
                 if (subTask.getTitle() == null || subTask.getTitle().isEmpty()) {

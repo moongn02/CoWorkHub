@@ -90,6 +90,16 @@ public class IssueController {
                 return Result.error("问题不存在");
             }
 
+            // 检查状态是否变更
+            if (issue.getStatus() != null && !issue.getStatus().equals(existingIssue.getStatus())) {
+                issue.setLastStatusChangedTime(LocalDateTime.now());
+            }
+
+            // 检查处理人是否变更
+            if (issue.getHandlerId() != null && !issue.getHandlerId().equals(existingIssue.getHandlerId())) {
+                issue.setLastAssignedTime(LocalDateTime.now());
+            }
+
             boolean success = issueService.updateById(issue);
 
             if (success) {
@@ -210,7 +220,13 @@ public class IssueController {
                 return Result.error("问题不存在");
             }
 
+            // 状态未变更时无需更新
+            if (status.equals(issue.getStatus())) {
+                return Result.success();
+            }
+
             issue.setStatus(status);
+            issue.setLastStatusChangedTime(LocalDateTime.now());
             boolean success = issueService.updateById(issue);
 
             // 添加备注和工时
@@ -265,6 +281,9 @@ public class IssueController {
             Issue issue = issueService.getById(id);
             if (issue == null) {
                 return Result.error("问题不存在");
+            }
+            if (!handlerId.equals(issue.getHandlerId())) {
+                issue.setLastAssignedTime(LocalDateTime.now());
             }
 
             issue.setHandlerId(handlerId);

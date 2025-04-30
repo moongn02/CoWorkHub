@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,6 +37,11 @@ public class IssueServiceImpl extends ServiceImpl<IssueMapper, Issue> implements
     @Override
     @Transactional
     public boolean createIssue(Issue issue) {
+
+        // 设置创建时间和更新时间
+        issue.setCreateTime(LocalDateTime.now());
+        issue.setUpdateTime(LocalDateTime.now());
+
         return this.save(issue);
     }
 

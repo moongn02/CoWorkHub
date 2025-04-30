@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/task")
@@ -74,6 +71,18 @@ public class TaskController {
             Task existingTask = taskService.getById(task.getId());
             if (existingTask == null) {
                 return Result.error("任务不存在");
+            }
+
+            task.setUpdateTime(LocalDateTime.now());
+
+            // 检查状态是否变更
+            if (task.getStatus() != null && !task.getStatus().equals(existingTask.getStatus())) {
+                task.setLastStatusChangedTime(LocalDateTime.now());
+            }
+
+            // 检查处理人是否变更
+            if (task.getHandlerId() != null && !task.getHandlerId().equals(existingTask.getHandlerId())) {
+                task.setLastAssignedTime(LocalDateTime.now());
             }
 
             boolean success = taskService.updateById(task);
@@ -131,6 +140,10 @@ public class TaskController {
                 return Result.error("任务不存在");
             }
 
+            // 检查处理人是否变更
+            if (!handlerId.equals(task.getHandlerId())) {
+                task.setLastAssignedTime(LocalDateTime.now());
+            }
             task.setHandlerId(handlerId);
             boolean success = taskService.updateById(task);
 
@@ -188,7 +201,13 @@ public class TaskController {
                 return Result.error("任务不存在");
             }
 
+            // 状态未变更时无需更新
+            if (status.equals(task.getStatus())) {
+                Result.success();
+            }
+
             task.setStatus(status);
+            task.setLastStatusChangedTime(LocalDateTime.now());
             boolean success = taskService.updateById(task);
 
             // 添加备注和工时
