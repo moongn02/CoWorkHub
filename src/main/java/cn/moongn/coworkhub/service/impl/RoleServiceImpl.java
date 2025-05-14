@@ -81,12 +81,27 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     @Transactional
     public boolean addRole(Role role) {
+        // 检查角色名是否已存在
+        Long count = lambdaQuery().eq(Role::getName, role.getName()).count();
+        if (count > 0) {
+            throw new ApiException("角色名已存在");
+        }
+
         return roleMapper.insert(role) > 0;
     }
 
     @Override
     @Transactional
     public boolean updateRole(Role role) {
+        // 检查角色名是否已存在
+        Long count = lambdaQuery()
+                .eq(Role::getName, role.getName())
+                .ne(Role::getId, role.getId())
+                .count();
+        if (count > 0) {
+            throw new ApiException("角色名已存在");
+        }
+
         return this.updateById(role);
     }
 

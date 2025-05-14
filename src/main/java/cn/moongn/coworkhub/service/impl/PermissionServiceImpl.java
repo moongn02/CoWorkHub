@@ -83,6 +83,14 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     @Override
     @Transactional
     public boolean updatePermission(Permission permission) {
+        // 检查权限编码是否已存在
+        Long count = lambdaQuery()
+                .eq(Permission::getCode, permission.getCode())
+                .ne(Permission::getId, permission.getId())
+                .count();
+        if (count > 0) {
+            throw new ApiException("权限编码已存在");
+        }
 
         return this.updateById(permission);
     }
