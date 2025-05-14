@@ -3,12 +3,15 @@
 import cn.hutool.core.bean.BeanUtil;
 import cn.moongn.coworkhub.common.utils.JwtUtils;
 import cn.moongn.coworkhub.common.exception.ApiException;
+import cn.moongn.coworkhub.mapper.RoleMapper;
+import cn.moongn.coworkhub.model.Role;
 import cn.moongn.coworkhub.model.vo.LoginVO;
 import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.LoginDTO;
 import cn.moongn.coworkhub.model.vo.RegisterVO;
 import cn.moongn.coworkhub.service.AuthService;
+import cn.moongn.coworkhub.service.PermissionService;
 import cn.moongn.coworkhub.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,16 +29,22 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
+    private final RoleMapper roleMapper;
+    private final PermissionService permissionService;
 
     @Autowired
     public AuthServiceImpl(PasswordEncoder passwordEncoder,
                            UserService userService,
                            JwtUtils jwtUtils,
-                           UserMapper userMapper) {
+                           UserMapper userMapper,
+                           RoleMapper roleMapper,
+                           PermissionService permissionService) {
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
         this.jwtUtils = jwtUtils;
         this.userMapper = userMapper;
+        this.roleMapper = roleMapper;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -63,42 +73,50 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Map<String, Object> login(LoginVO loginVO) {
-        LoginDTO user = getUser(loginVO.getUsername());
-        if (user != null && passwordEncoder.matches(loginVO.getPassword(), user.getPassword())) {
-            String token = jwtUtils.generateToken(user.getUsername());
-            Map<String, Object> result = new HashMap<>();
-            user.setPassword(null);
-            result.put("token", token);
-            result.put("user", user);
-            return result;
+        // 获取用户信息
+        User user = userMapper.getByUsername(loginVO.getUsername());
+        if (user == null) {
+            throw new ApiException("用户名或密码错误");
         }
-        throw new ApiException("用户名或密码错误");
-    }
 
-//    @Override
-//    public void sendVerificationCode(String emailOrPhone) {
-//        // 生成并发送验证码逻辑
-//        String code = String.valueOf((int) (Math.random() * 900000) + 100000); // 生成六位验证码
-//        verificationCodes.put(emailOrPhone, code);
-//        // 发送验证码到邮箱或手机号的逻辑
-//    }
-//
-//    @Override
-//    public void resetPassword(ResetPasswordVO resetPasswordVO) {
-//        String storedCode = verificationCodes.get(resetPasswordVO.getEmailOrPhone());
-//        if (storedCode == null || !storedCode.equals(resetPasswordVO.getVerificationCode())) {
-//            throw new ApiException("验证码错误");
-//        }
-//
-//        User user = userService.getByUsername(resetPasswordVO.getEmailOrPhone());
-//        if (user == null) {
-//            throw new ApiException("用户不存在");
-//        }
-//
-//        user.setPassword(passwordEncoder.encode(resetPasswordVO.getNewPassword())); // 使用密码加密
-//        userService.update(user);
-//        verificationCodes.remove(resetPasswordVO.getEmailOrPhone()); // 清除验证码
-//    }
+        // 验证密码
+        if (!passwordEncoder.matches(loginVO.getPassword(), user.getPassword())) {
+            throw new ApiException("用户名或密码错误");
+        }
+
+        // 用户状态检查
+        if (user.getStatus() != 1) {
+            throw new ApiException("账号已被禁用，请联系管理员");
+        }
+
+        // 生成令牌
+        String token = jwtUtils.generateToken(user.getUsername());
+
+        // 构造返回数据
+        Map<String, Object> result = new HashMap<>();
+
+        // 创建DTO对象
+        LoginDTO loginDTO = new LoginDTO();
+        BeanUtil.copyProperties(user, loginDTO);
+        loginDTO.setPassword(null); // 清除密码
+
+        // 获取角色信息
+        if (user.getRoleId() != null) {
+            Role role = roleMapper.getById(user.getRoleId());
+            if (role != null) {
+                loginDTO.setRoleName(role.getName());
+            }
+        }
+
+        // 获取权限列表
+        List<String> permissions = permissionService.getUserPermissionCodes(user.getId());
+        loginDTO.setPermissions(permissions);
+
+        result.put("token", token);
+        result.put("user", loginDTO);
+
+        return result;
+    }
 
     public void logout() {
         // 可以在这里添加一些清理工作，比如清除用户的缓存等

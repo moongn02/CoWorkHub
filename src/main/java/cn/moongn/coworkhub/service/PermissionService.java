@@ -86,4 +86,26 @@ public interface PermissionService extends IService<Permission> {
      * @return 叶子节点权限ID
      */
     List<Long> filterLeafPermissions(List<Long> allPermissionIds);
+
+    /**
+     * 根据角色ID获取所有可用权限
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    List<Permission> getPermissionsByRoleId(Long roleId);
+
+    /**
+     * 检查用户是否拥有指定权限
+     * @param userId 用户ID
+     * @param permissionCode 权限代码
+     * @return 是否有权限
+     */
+    boolean hasPermission(Long userId, String permissionCode);
+
+    /**
+     * 根据用户ID获取权限代码列表
+     * @param userId 用户ID
+     * @return 权限代码列表
+     */
+    List<String> getUserPermissionCodes(Long userId);
 }

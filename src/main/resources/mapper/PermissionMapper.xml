@@ -20,7 +20,7 @@
                 AND p.is_sensitive = #{isSensitive}
             </if>
         </where>
-        ORDER BY p.parent_id ASC, p.id DESC
+        ORDER BY p.id DESC
     </select>
 
     <!-- 根据ID获取权限详情 -->
@@ -36,7 +36,7 @@
         FROM permission p
                  INNER JOIN role_permission rp ON p.id = rp.permission_id
         WHERE rp.role_id = #{roleId}
-        ORDER BY p.parent_id ASC, p.id ASC
+        ORDER BY p.id ASC
     </select>
 
     <!-- 查询所有父级权限（用于下拉选择） -->

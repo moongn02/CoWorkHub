@@ -3,7 +3,9 @@ package cn.moongn.coworkhub.service.impl;
 import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.PermissionMapper;
 import cn.moongn.coworkhub.mapper.RolePermissionMapper;
+import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.Permission;
+import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.PermissionDTO;
 import cn.moongn.coworkhub.service.PermissionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -24,6 +26,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 
     private final PermissionMapper permissionMapper;
     private final RolePermissionMapper rolePermissionMapper;
+    private final UserMapper userMapper;
 
     @Override
     public Page<PermissionDTO> pagePermissions(int current, int size, Map<String, Object> params) {
@@ -263,6 +266,62 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         // 过滤掉父权限，只保留子权限（叶子节点）
         return allPermissionIds.stream()
                 .filter(id -> !parentIds.contains(id))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Permission> getPermissionsByRoleId(Long roleId) {
+        if (roleId == null) {
+            return Collections.emptyList();
+        }
+
+        // 获取角色拥有的所有权限
+        List<Permission> permissions = permissionMapper.selectByRoleId(roleId);
+
+        // 过滤出启用状态的权限
+        return permissions.stream()
+                .filter(p -> p.getStatus() == 1) // 1表示启用状态
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean hasPermission(Long userId, String permissionCode) {
+        if (userId == null || permissionCode == null || permissionCode.isEmpty()) {
+            return false;
+        }
+
+        // 获取用户
+        User user = userMapper.getById(userId);
+        if (user == null || user.getRoleId() == null || user.getStatus() != 1) {
+            return false;
+        }
+
+        // 获取角色权限列表
+        List<Permission> permissions = getPermissionsByRoleId(user.getRoleId());
+
+        // 检查是否包含指定权限
+        return permissions.stream()
+                .anyMatch(p -> permissionCode.equals(p.getCode()));
+    }
+
+    @Override
+    public List<String> getUserPermissionCodes(Long userId) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+
+        // 获取用户
+        User user = userMapper.getById(userId);
+        if (user == null || user.getRoleId() == null || user.getStatus() != 1) {
+            return Collections.emptyList();
+        }
+
+        // 获取角色权限
+        List<Permission> permissions = getPermissionsByRoleId(user.getRoleId());
+
+        // 提取权限代码
+        return permissions.stream()
+                .map(Permission::getCode)
                 .collect(Collectors.toList());
     }
 
