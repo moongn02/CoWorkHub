@@ -9,6 +9,7 @@ import cn.moongn.coworkhub.service.ScheduledJobLogService;
 import cn.moongn.coworkhub.service.ScheduledJobService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.CronExpression;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  * Quartz任务执行器
@@ -97,10 +100,34 @@ public class JobExecutor extends QuartzJobBean {
                     message
             );
 
-            // 更新任务下次执行时间
-            job.setNextRunTime(LocalDateTime.now().plusSeconds(context.getNextFireTime().getTime() / 1000));
-            job.setUpdatedTime(LocalDateTime.now());
-            jobService.updateById(job);
+            // 更新任务下次执行时间（只有当任务状态为启用时）
+            if (job.getStatus() == 1) { // 1表示启用状态
+                try {
+                    // 从触发器获取下次执行时间
+                    Date nextFireTime = context.getNextFireTime();
+                    if (nextFireTime != null) {
+                        LocalDateTime nextRunTime = LocalDateTime.ofInstant(
+                                nextFireTime.toInstant(), ZoneId.systemDefault());
+                        job.setNextRunTime(nextRunTime);
+                    } else {
+                        // 如果无法从上下文获取，尝试从cron表达式计算
+                        try {
+                            CronExpression cron = new CronExpression(job.getCronExpression());
+                            Date nextTime = cron.getNextValidTimeAfter(new Date());
+                            if (nextTime != null) {
+                                job.setNextRunTime(LocalDateTime.ofInstant(
+                                        nextTime.toInstant(), ZoneId.systemDefault()));
+                            }
+                        } catch (Exception e) {
+                            log.warn("计算下次执行时间失败: {}", e.getMessage());
+                        }
+                    }
+                    job.setUpdatedTime(LocalDateTime.now());
+                    jobService.updateById(job);
+                } catch (Exception e) {
+                    log.error("更新下次执行时间失败: {}", e.getMessage());
+                }
+            }
 
             log.info("定时任务执行完成，任务ID: {}, 结果: {}", jobId, success ? "成功" : "失败");
         } catch (Exception e) {
