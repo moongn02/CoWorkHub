@@ -5,7 +5,7 @@ import cn.moongn.coworkhub.model.User;
 import cn.moongn.coworkhub.model.dto.UserDTO;
 import cn.moongn.coworkhub.model.vo.ResetPasswordVO;
 import cn.moongn.coworkhub.model.vo.UpdateUserVO;
-import cn.moongn.coworkhub.service.DepartmentService;
+import cn.moongn.coworkhub.service.PermissionService;
 import cn.moongn.coworkhub.service.UserService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
@@ -25,7 +25,22 @@ import java.util.Map;
 public class UserController {
     
     private final UserService userService;
-    private final DepartmentService departmentService;
+    private final PermissionService  permissionService;
+
+    /**
+     * 刷新当前用户权限
+     */
+    @GetMapping("/refresh_permissions")
+    public Result<List<String>> refreshPermissions() {
+        User currentUser = userService.getCurrentUser();
+        if (currentUser == null) {
+            return Result.error(401, "用户未认证或不存在");
+        }
+
+        // 获取最新的权限列表
+        List<String> permissions = permissionService.getUserPermissionCodes(currentUser.getId());
+        return Result.success(permissions);
+    }
 
     // 获取个人中心展示数据
     @GetMapping("/info")

@@ -68,9 +68,10 @@ public class RoleController {
     @PostMapping("/assign")
     public Result<Boolean> assignPermissions(@RequestParam Long roleId, @RequestBody List<Long> permissionIds) {
         boolean success = false;
-        if (roleId == null || permissionIds != null || !permissionIds.isEmpty()) {
-            List<Long> leafPermissionIds = filterLeafPermissions(permissionIds);
-            success = rolePermissionService.assignPermissions(roleId, leafPermissionIds);
+        if (roleId != null && permissionIds != null && !permissionIds.isEmpty()) {
+            // 获取权限及其直接父级权限
+            List<Long> completePermissionIds = permissionService.getDirectParentPermissionIds(permissionIds);
+            success = rolePermissionService.assignPermissions(roleId, completePermissionIds);
         }
 
         return success ? Result.success(true) : Result.error("权限分配失败");
@@ -84,9 +85,9 @@ public class RoleController {
         boolean success = roleService.addRole(role);
 
         if (success && role.getPermissionIds() != null && !role.getPermissionIds().isEmpty()) {
-            // 只保存子权限，过滤掉半选中的父权限
-            List<Long> leafPermissionIds = filterLeafPermissions(role.getPermissionIds());
-            rolePermissionService.assignPermissions(role.getId(), leafPermissionIds);
+            // 获取权限及其直接父级权限
+            List<Long> completePermissionIds = permissionService.getDirectParentPermissionIds(role.getPermissionIds());
+            rolePermissionService.assignPermissions(role.getId(), completePermissionIds);
         }
 
         return success ? Result.success(true) : Result.error("添加角色失败");
@@ -100,10 +101,10 @@ public class RoleController {
         role.setId(id);
         boolean success = roleService.updateRole(role);
 
-        if (success) {
-            // 只保存子权限，过滤掉半选中的父权限
-            List<Long> leafPermissionIds = filterLeafPermissions(role.getPermissionIds());
-            rolePermissionService.assignPermissions(id, leafPermissionIds);
+        if (success && role.getPermissionIds() != null && !role.getPermissionIds().isEmpty()) {
+            // 获取权限及其直接父级权限
+            List<Long> completePermissionIds = permissionService.getDirectParentPermissionIds(role.getPermissionIds());
+            rolePermissionService.assignPermissions(id, completePermissionIds);
         }
 
         return success ? Result.success(true) : Result.error("更新角色失败");

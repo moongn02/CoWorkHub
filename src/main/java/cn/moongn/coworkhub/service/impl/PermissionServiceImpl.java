@@ -333,6 +333,37 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Long> getDirectParentPermissionIds(List<Long> permissionIds) {
+        if (permissionIds == null || permissionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 创建一个集合用于保存所有权限ID（包括直接父权限）
+        Set<Long> allPermissionIds = new HashSet<>(permissionIds);
+
+        // 获取所有指定ID的权限
+        List<Permission> permissions = this.listByIds(permissionIds);
+        if (permissions.isEmpty()) {
+            return new ArrayList<>(permissionIds);
+        }
+
+        // 添加所有直接父权限ID
+        for (Permission permission : permissions) {
+            if (permission.getParentId() != null && permission.getParentId() > 0) {
+                allPermissionIds.add(permission.getParentId());
+
+                // 如果父权限是二级菜单，还需要添加一级菜单
+                Permission parentPermission = this.getById(permission.getParentId());
+                if (parentPermission != null && parentPermission.getParentId() != null && parentPermission.getParentId() > 0) {
+                    allPermissionIds.add(parentPermission.getParentId());
+                }
+            }
+        }
+
+        return new ArrayList<>(allPermissionIds);
+    }
+
     /**
      * 将Permission实体转换为DTO
      * @param permission 权限实体

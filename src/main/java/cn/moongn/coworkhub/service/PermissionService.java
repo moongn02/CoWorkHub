@@ -108,4 +108,11 @@ public interface PermissionService extends IService<Permission> {
      * @return 权限代码列表
      */
     List<String> getUserPermissionCodes(Long userId);
+
+    /**
+     * 获取权限列表的直接父级权限ID列表
+     * @param permissionIds 权限ID列表
+     * @return 包含原权限ID和其直接父级权限ID的列表
+     */
+    List<Long> getDirectParentPermissionIds(List<Long> permissionIds);
 }

@@ -56,4 +56,12 @@ public interface PermissionMapper extends BaseMapper<Permission> {
      */
     @Select("SELECT COUNT(*) FROM permission WHERE parent_id = #{parentId}")
     Long countByParentId(@Param("parentId") Long parentId);
+
+    /**
+     * 根据权限ID获取其直接父级权限ID
+     * @param permissionId 权限ID
+     * @return 父级权限ID
+     */
+    @Select("SELECT parent_id FROM permission WHERE id = #{permissionId}")
+    Long getParentIdByPermissionId(@Param("permissionId") Long permissionId);
 }
