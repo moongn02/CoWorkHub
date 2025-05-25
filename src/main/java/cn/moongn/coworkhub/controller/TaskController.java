@@ -228,7 +228,7 @@ public class TaskController {
             }
 
             if (success) {
-                String statusText = getStatusText(status);
+                String statusText = getTaskStatusText(status);
                 taskActivityRecorder.record(id, TaskActivityType.CHANGE_STATUS, statusText);
             }
 
@@ -420,9 +420,21 @@ public class TaskController {
     }
 
     /**
-     * 辅助方法：获取状态文本
+     * 辅助方法：获取任务状态文本
      */
-    private String getStatusText(Integer status) {
+    private String getTaskStatusText(Integer status) {
+        return switch (status) {
+            case 1 -> "已分派";
+            case 2 -> "进行中";
+            case 3 -> "已完成";
+            default -> "未知";
+        };
+    }
+
+    /**
+     * 辅助方法：获取问题状态文本
+     */
+    private String getIssueStatusText(Integer status) {
         return switch (status) {
             case 1 -> "已分派";
             case 2 -> "处理中";
@@ -457,7 +469,7 @@ public class TaskController {
                 issueMap.put("title", issue.getTitle());
                 issueMap.put("handlerName", handlerName);
                 issueMap.put("status", issue.getStatus());
-                issueMap.put("statusText", getStatusText(issue.getStatus()));
+                issueMap.put("statusText", getIssueStatusText(issue.getStatus()));
                 issueMap.put("expectedTime", issue.getExpectedTime());
                 result.add(issueMap);
             }
@@ -498,7 +510,7 @@ public class TaskController {
             }
 
             // 获取状态文本
-            String statusText = getStatusText(parentTask.getStatus());
+            String statusText = getTaskStatusText(parentTask.getStatus());
 
             Map<String, Object> result = new HashMap<>();
             result.put("id", parentTask.getId());
@@ -535,7 +547,7 @@ public class TaskController {
                 }
 
                 // 获取状态文本
-                String statusText = getStatusText(subTask.getStatus());
+                String statusText = getTaskStatusText(subTask.getStatus());
 
                 Map<String, Object> taskMap = new HashMap<>();
                 taskMap.put("id", subTask.getId());

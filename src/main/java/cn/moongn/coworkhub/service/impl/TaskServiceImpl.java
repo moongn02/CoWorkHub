@@ -252,19 +252,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 dto.setStatusText("已分派");
                 break;
             case 2:
-                dto.setStatusText("处理中");
+                dto.setStatusText("进行中");
                 break;
             case 3:
                 dto.setStatusText("已完成");
-                break;
-            case 4:
-                dto.setStatusText("测试中");
-                break;
-            case 5:
-                dto.setStatusText("已暂停");
-                break;
-            case 6:
-                dto.setStatusText("已关闭");
                 break;
             default:
                 dto.setStatusText("未知状态");

@@ -562,11 +562,8 @@ public class TaskJobHandlerImpl implements TaskJobHandler {
 
         return switch (status) {
             case 1 -> "已分派";
-            case 2 -> "处理中";
+            case 2 -> "进行中";
             case 3 -> "已完成";
-            case 4 -> "测试中";
-            case 5 -> "已暂停";
-            case 6 -> "已关闭";
             default -> "未知状态(" + status + ")";
         };
     }
