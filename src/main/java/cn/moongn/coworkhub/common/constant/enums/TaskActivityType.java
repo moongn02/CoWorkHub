@@ -9,6 +9,7 @@ public enum TaskActivityType {
     CREATE_FROM_SPLIT("基于父任务拆分创建，任务编号: %s"),
     UPDATE("修改任务"),
     CHANGE_STATUS("变更任务状态为: %s"),
+    SYNC_CHANGE_STATUS("同步上级任务变更状态为: %s"),
     SPLIT_TASK("拆分任务"),
     CREATE_ISSUE("创建关联问题: %s"),
     TRANSFER("将任务转派给: %s"),

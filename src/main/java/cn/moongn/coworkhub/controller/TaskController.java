@@ -179,16 +179,13 @@ public class TaskController {
      * 更新任务状态
      */
     @PutMapping("/update_status/{id}")
-    public Result<Boolean> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, Object> params) {
+    public Result<?> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         try {
-            Integer status = null;
-            if (params.get("status") != null) {
-                status = Integer.valueOf(params.get("status").toString());
-            } else {
-                return Result.error("状态不能为空");
-            }
+            Integer status = params.get("status") != null ? Integer.valueOf(params.get("status").toString()) : null;
+            if (status == null) return Result.error("状态不能为空");
 
             String comment = (String) params.get("comment");
+            boolean forceComplete = params.get("forceComplete") != null && Boolean.parseBoolean(params.get("forceComplete").toString());
 
             BigDecimal workHours = BigDecimal.ZERO; // 默认为0
             if (params.containsKey("workHours") && params.get("workHours") != null) {
@@ -197,13 +194,56 @@ public class TaskController {
 
             // 更新任务状态
             Task task = taskService.getById(id);
-            if (task == null) {
-                return Result.error("任务不存在");
+            if (task == null) return Result.error("任务不存在");
+
+            // 只在要改为已完成时校验
+            if (status == 3) {
+                List<Task> subTasks = taskService.getSubTasks(id);
+                List<Long> unfinishedSubTaskIds = new ArrayList<>();
+                List<Long> subTaskHasSubTaskIds = new ArrayList<>();
+
+                for (Task subTask : subTasks) {
+                    // 检查子任务下是否还有子任务
+                    List<Task> subSubTasks = taskService.getSubTasks(subTask.getId());
+                    if (subSubTasks != null && !subSubTasks.isEmpty()) {
+                        subTaskHasSubTaskIds.add(subTask.getId());
+                    }
+                    // 记录未完成的子任务
+                    if (subTask.getStatus() != 3) {
+                        unfinishedSubTaskIds.add(subTask.getId());
+                    }
+                }
+
+                // 有未完成子任务，且未强制完成，提示
+                if (!unfinishedSubTaskIds.isEmpty() && !forceComplete) {
+                    return Result.error("存在未完成的子任务" + unfinishedSubTaskIds, unfinishedSubTaskIds);
+                }
+
+                // 若有未完成子任务，且强制完成，则批量更新所有子任务为已完成
+                if (!unfinishedSubTaskIds.isEmpty() && forceComplete) {
+                    // 有子任务下还有子任务，报错
+                    if (!subTaskHasSubTaskIds.isEmpty()) {
+                        String ids = subTaskHasSubTaskIds.stream().map(String::valueOf).reduce((a, b) -> a + "," + b).orElse("");
+                        return Result.error("子任务" + ids + "下存在子任务，无法同步变更状态");
+                    }
+
+                    for (Long subTaskId : unfinishedSubTaskIds) {
+                        Task subTask = taskService.getById(subTaskId);
+                        if (subTask != null) {
+                            subTask.setStatus(3);
+                            subTask.setLastStatusChangedTime(LocalDateTime.now());
+                            taskService.updateById(subTask);
+
+                            String statusText = getTaskStatusText(status);
+                            taskActivityRecorder.record(subTaskId, TaskActivityType.SYNC_CHANGE_STATUS, statusText);
+                        }
+                    }
+                }
             }
 
             // 状态未变更时无需更新
             if (status.equals(task.getStatus())) {
-                Result.success();
+                return Result.success();
             }
 
             task.setStatus(status);
@@ -217,12 +257,8 @@ public class TaskController {
                 taskComment.setContent(comment);
 
                 User currentUser = userService.getCurrentUser();
-                if (currentUser == null) {
-                    return Result.error("系统错误，请联系管理员");
-                }
-                Long currentUserId = currentUser.getId();
-                taskComment.setCreatorId(currentUserId);
-
+                if (currentUser == null) return Result.error("系统错误，请联系管理员");
+                taskComment.setCreatorId(currentUser.getId());
                 taskComment.setWorkHours(workHours);
                 taskCommentService.addTaskComment(taskComment);
             }
