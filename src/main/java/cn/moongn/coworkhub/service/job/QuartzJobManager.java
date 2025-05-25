@@ -202,7 +202,7 @@ public class QuartzJobManager {
     /**
      * 获取下次执行时间
      */
-    public LocalDateTime getNextFireTime(String cronExpression) {
+    public LocalDateTime getNextRunTime(String cronExpression) {
         try {
             CronExpression cron = new CronExpression(cronExpression);
             Date nextFireTime = cron.getNextValidTimeAfter(new Date());

@@ -22,7 +22,7 @@ public class ScheduledJobController {
     private final ScheduledJobService jobService;
 
     /**
-     * 分页查询定时任务
+     * 分页查询定时作业
      */
     @GetMapping("/page")
     public Result<Map<String, Object>> getJobsByPage(
@@ -43,19 +43,19 @@ public class ScheduledJobController {
     }
 
     /**
-     * 获取定时任务详情
+     * 获取定时作业详情
      */
     @GetMapping("/{id}")
     public Result<ScheduledJobDTO> getJobDetail(@PathVariable Long id) {
         ScheduledJobDTO job = jobService.getJobDetail(id);
         if (job == null) {
-            return Result.error("任务不存在");
+            return Result.error("作业不存在");
         }
         return Result.success(job);
     }
 
     /**
-     * 添加定时任务
+     * 添加定时作业
      */
     @PostMapping
     public Result<Long> addJob(@RequestBody ScheduledJobDTO jobDTO) {
@@ -64,32 +64,32 @@ public class ScheduledJobController {
     }
 
     /**
-     * 更新定时任务
+     * 更新定时作业
      */
     @PutMapping("/{id}")
     public Result<Boolean> updateJob(@PathVariable Long id, @RequestBody ScheduledJobDTO jobDTO) {
         jobDTO.setId(id);
         boolean result = jobService.updateJob(jobDTO);
-        return result ? Result.success(true) : Result.error("更新失败或任务不存在");
+        return result ? Result.success(true) : Result.error("更新失败或作业不存在");
     }
 
     /**
-     * 删除定时任务
+     * 删除定时作业
      */
     @DeleteMapping("/{id}")
     public Result<Boolean> deleteJob(@PathVariable Long id) {
         boolean result = jobService.deleteJob(id);
-        return result ? Result.success(true) : Result.error("删除失败或任务不存在");
+        return result ? Result.success(true) : Result.error("删除失败或作业不存在");
     }
 
     /**
-     * 批量删除定时任务
+     * 批量删除定时作业
      */
     @DeleteMapping("/batch")
     public Result<Boolean> batchDeleteJobs(@RequestBody Map<String, List<Long>> requestMap) {
         List<Long> ids = requestMap.get("ids");
         if (ids == null || ids.isEmpty()) {
-            return Result.error("未提供任务ID");
+            return Result.error("未提供作业ID");
         }
 
         boolean result = jobService.batchDeleteJobs(ids);
@@ -97,29 +97,38 @@ public class ScheduledJobController {
     }
 
     /**
-     * 暂停定时任务
+     * 暂停定时作业
      */
     @PutMapping("/pause/{id}")
     public Result<Boolean> pauseJob(@PathVariable Long id) {
         boolean result = jobService.pauseJob(id);
-        return result ? Result.success(true) : Result.error("暂停失败或任务不存在");
+        return result ? Result.success(true) : Result.error("暂停失败或作业不存在");
     }
 
     /**
-     * 恢复定时任务
+     * 恢复定时作业
      */
     @PutMapping("/resume/{id}")
     public Result<Boolean> resumeJob(@PathVariable Long id) {
         boolean result = jobService.resumeJob(id);
-        return result ? Result.success(true) : Result.error("恢复失败或任务不存在");
+        return result ? Result.success(true) : Result.error("恢复失败或作业不存在");
     }
 
     /**
-     * 立即执行一次任务
+     * 立即执行一次作业
      */
     @PutMapping("/trigger/{id}")
     public Result<Boolean> triggerJob(@PathVariable Long id) {
         boolean result = jobService.triggerJob(id);
         return result ? Result.success(true) : Result.error("触发失败或任务不存在");
+    }
+
+    /**
+     * 刷新所有作业的下次执行时间
+     */
+    @PostMapping("/refresh_next_run_time")
+    public Result<Boolean> refreshNextRunTime() {
+        jobService.updateAllNextRunTime();
+        return Result.success();
     }
 }

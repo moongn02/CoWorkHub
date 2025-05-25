@@ -20,11 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.CronExpression;
 import org.quartz.SchedulerException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +39,8 @@ public class ScheduledJobServiceImpl extends ServiceImpl<ScheduledJobMapper, Sch
 
     private final QuartzJobManager quartzJobManager;
     private final ObjectMapper objectMapper;
+    @Autowired
+    private ScheduledJobMapper scheduledJobMapper;
 
     @Override
     public IPage<ScheduledJobDTO> getJobsByPage(long current, long size, String name, Integer status, String objectType, String triggerType) {
@@ -125,7 +129,7 @@ public class ScheduledJobServiceImpl extends ServiceImpl<ScheduledJobMapper, Sch
 
             // 如果修改了cron表达式，需要重新计算下次执行时间
             if (!oldJob.getCronExpression().equals(job.getCronExpression())) {
-                job.setNextRunTime(quartzJobManager.getNextFireTime(job.getCronExpression()));
+                job.setNextRunTime(quartzJobManager.getNextRunTime(job.getCronExpression()));
             }
 
             boolean result = updateById(job);
@@ -253,7 +257,7 @@ public class ScheduledJobServiceImpl extends ServiceImpl<ScheduledJobMapper, Sch
             // 恢复作业
             job.setStatus(JobStatusEnum.NORMAL.getCode());
             job.setUpdatedTime(LocalDateTime.now());
-            job.setNextRunTime(quartzJobManager.getNextFireTime(job.getCronExpression()));
+            job.setNextRunTime(quartzJobManager.getNextRunTime(job.getCronExpression()));
             boolean result = updateById(job);
 
             // 恢复Quartz作业
@@ -280,7 +284,7 @@ public class ScheduledJobServiceImpl extends ServiceImpl<ScheduledJobMapper, Sch
 
             // 仅当任务为启用状态时更新下次执行时间
             if (job.getStatus() == JobStatusEnum.NORMAL.getCode()) {
-                job.setNextRunTime(quartzJobManager.getNextFireTime(job.getCronExpression()));
+                job.setNextRunTime(quartzJobManager.getNextRunTime(job.getCronExpression()));
                 job.setUpdatedTime(LocalDateTime.now());
                 updateById(job);
             }
@@ -289,6 +293,20 @@ public class ScheduledJobServiceImpl extends ServiceImpl<ScheduledJobMapper, Sch
         } catch (SchedulerException e) {
             log.error("立即执行定时作业失败", e);
             throw new ApiException("立即执行定时作业失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateAllNextRunTime() {
+        List<ScheduledJob> jobs = scheduledJobMapper.selectList(null);
+        for (ScheduledJob job : jobs) {
+            if (Objects.equals(job.getStatus(), JobStatusEnum.PAUSED.getCode())) {
+                continue;
+            }
+            LocalDateTime nextTime = quartzJobManager.getNextRunTime(job.getCronExpression());
+            job.setNextRunTime(nextTime);
+            scheduledJobMapper.updateById(job);
         }
     }
 
