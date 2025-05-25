@@ -1,8 +1,8 @@
 package cn.moongn.coworkhub.service.job;
 
-import cn.moongn.coworkhub.constant.enums.JobLogStatusEnum;
-import cn.moongn.coworkhub.constant.enums.ObjectTypeEnum;
-import cn.moongn.coworkhub.constant.enums.TriggerTypeEnum;
+import cn.moongn.coworkhub.common.constant.enums.JobLogStatusEnum;
+import cn.moongn.coworkhub.common.constant.enums.ObjectTypeEnum;
+import cn.moongn.coworkhub.common.constant.enums.TriggerTypeEnum;
 import cn.moongn.coworkhub.model.dto.JobConditionDTO;
 import cn.moongn.coworkhub.model.ScheduledJob;
 import cn.moongn.coworkhub.service.ScheduledJobLogService;

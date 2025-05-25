@@ -1,7 +1,7 @@
 package cn.moongn.coworkhub.service.impl;
 
 import cn.moongn.coworkhub.common.exception.ApiException;
-import cn.moongn.coworkhub.constant.enums.Gender;
+import cn.moongn.coworkhub.common.constant.enums.Gender;
 import cn.moongn.coworkhub.mapper.RoleMapper;
 import cn.moongn.coworkhub.mapper.UserMapper;
 import cn.moongn.coworkhub.model.Role;

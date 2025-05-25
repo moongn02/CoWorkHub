@@ -2,7 +2,7 @@ package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
 import cn.moongn.coworkhub.common.utils.TaskActivityRecorder;
-import cn.moongn.coworkhub.constant.enums.TaskActivityType;
+import cn.moongn.coworkhub.common.constant.enums.TaskActivityType;
 import cn.moongn.coworkhub.model.*;
 import cn.moongn.coworkhub.model.dto.TaskActivityDTO;
 import cn.moongn.coworkhub.model.dto.TaskCommentDTO;

@@ -1,6 +1,6 @@
 package cn.moongn.coworkhub.common.utils;
 
-import cn.moongn.coworkhub.constant.enums.TaskActivityType;
+import cn.moongn.coworkhub.common.constant.enums.TaskActivityType;
 import cn.moongn.coworkhub.model.TaskActivity;
 import cn.moongn.coworkhub.service.TaskActivityService;
 import cn.moongn.coworkhub.service.UserService;

@@ -1,6 +1,6 @@
 package cn.moongn.coworkhub.common.utils;
 
-import cn.moongn.coworkhub.constant.enums.IssueActivityType;
+import cn.moongn.coworkhub.common.constant.enums.IssueActivityType;
 import cn.moongn.coworkhub.model.IssueActivity;
 import cn.moongn.coworkhub.service.IssueActivityService;
 import cn.moongn.coworkhub.service.UserService;

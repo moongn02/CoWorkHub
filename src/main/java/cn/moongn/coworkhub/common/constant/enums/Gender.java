@@ -1,4 +1,4 @@
-package cn.moongn.coworkhub.constant.enums;
+package cn.moongn.coworkhub.common.constant.enums;
 
 public enum Gender {
     MALE(0, "男"),

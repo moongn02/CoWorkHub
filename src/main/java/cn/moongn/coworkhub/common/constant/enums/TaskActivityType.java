@@ -1,4 +1,4 @@
-package cn.moongn.coworkhub.constant.enums;
+package cn.moongn.coworkhub.common.constant.enums;
 
 import lombok.Getter;
 

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import cn.moongn.coworkhub.constant.enums.JobLogStatusEnum;
+import cn.moongn.coworkhub.common.constant.enums.JobLogStatusEnum;
 import cn.moongn.coworkhub.model.dto.ScheduledJobLogDTO;
 import cn.moongn.coworkhub.mapper.ScheduledJobLogMapper;
 import cn.moongn.coworkhub.mapper.ScheduledJobMapper;

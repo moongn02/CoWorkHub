@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cn.moongn.coworkhub.constant.enums.JobStatusEnum;
+import cn.moongn.coworkhub.common.constant.enums.JobStatusEnum;
 import cn.moongn.coworkhub.model.dto.JobConditionDTO;
 import cn.moongn.coworkhub.model.dto.ScheduledJobDTO;
 import cn.moongn.coworkhub.mapper.ScheduledJobMapper;
