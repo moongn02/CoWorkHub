@@ -24,6 +24,7 @@ public class TaskDTO {
     private String statusText;
     private Integer priority;
     private String priorityText;
+    private LocalDateTime expectedStartTime;
     private LocalDateTime actualStartTime;
     private LocalDateTime expectedTime;
 }

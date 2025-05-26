@@ -52,16 +52,23 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             throw new ApiException("部门不能为空");
         }
 
-        if (task.getExpectedTime() == null) {
-            throw new ApiException("期望完成时间不能为空");
+        if (task.getExpectedStartTime() == null) {
+            throw new ApiException("预计开始时间不能为空");
+        }
+
+        if (task.getDuration() == null) {
+            throw new ApiException("持续天数不能为空");
         }
 
         // 设置初始状态为已分派
         task.setStatus(1);
 
-        // 设置创建时间和更新时间
+        // 计算期望完成时间
+        LocalDateTime expectedTime = task.getExpectedStartTime().plusDays(task.getDuration());
+        task.setExpectedTime(expectedTime);
+
+        // 设置创建时间
         task.setCreateTime(LocalDateTime.now());
-        task.setUpdateTime(LocalDateTime.now());
 
         // 执行保存
         return this.save(task);
