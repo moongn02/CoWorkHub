@@ -1,6 +1,7 @@
  package cn.moongn.coworkhub.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.moongn.coworkhub.common.constant.Constants;
 import cn.moongn.coworkhub.common.utils.JwtUtils;
 import cn.moongn.coworkhub.common.exception.ApiException;
 import cn.moongn.coworkhub.mapper.RoleMapper;
@@ -59,6 +60,7 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setUsername(registerVO.getUsername());
         user.setPassword(passwordEncoder.encode(registerVO.getPassword()));
+        user.setRoleId(Constants.DEFAULT_ROLE_ID);
 
         // 保存用户
         userService.save(user);

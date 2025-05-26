@@ -9,6 +9,8 @@ public class Constants {
     public static final Integer STATUS_DISABLE = 0;
     
     public static final String DEFAULT_PASSWORD = "123456";
+
+    public static final Long DEFAULT_ROLE_ID = 3L;
     
     public static class RoleType {
         public static final Integer ADMIN = 0;
