@@ -47,6 +47,20 @@ public interface TaskService extends IService<Task> {
     Task getParentTask(Long taskId);
 
     /**
+     * 获取任务的前置任务列表
+     * @param taskId 任务ID
+     * @return 前置任务列表
+     */
+    List<Task> getPreTasks(Long taskId);
+
+    /**
+     * 获取任务的后置任务列表
+     * @param taskId 任务ID
+     * @return 后置任务列表
+     */
+    List<Task> getPostTasks(Long taskId);
+
+    /**
      * 将Task实体转换为DTO
      * @param task 任务实体
      * @return 任务DTO

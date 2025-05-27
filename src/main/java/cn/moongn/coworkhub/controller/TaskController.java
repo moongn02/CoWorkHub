@@ -369,9 +369,11 @@ public class TaskController {
     @PutMapping("/expected_time/{id}")
     public Result<Boolean> updateExpectedTime(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         try {
-            String expectedTime = (String) params.get("expectedTime");
-            if (expectedTime != null && expectedTime.contains("/")) {
-                expectedTime = expectedTime.replace("/", "-");
+            String expectedStartTime = (String) params.get("expectedStartTime");
+            Integer duration = (Integer) params.get("duration");
+
+            if (expectedStartTime != null && expectedStartTime.contains("/")) {
+                expectedStartTime = expectedStartTime.replace("/", "-");
             }
 
             String comment = (String) params.get("comment");
@@ -389,8 +391,15 @@ public class TaskController {
 
             // 将字符串日期转换为LocalDateTime
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dateTime = LocalDateTime.parse(expectedTime, formatter);
-            task.setExpectedTime(dateTime);
+            LocalDateTime startDateTime = LocalDateTime.parse(expectedStartTime, formatter);
+
+            // 计算期望完成时间
+            LocalDateTime endDateTime = startDateTime.plusDays(duration);
+
+            task.setExpectedStartTime(startDateTime);
+            task.setExpectedTime(endDateTime);
+            task.setDuration(duration);
+            task.setUpdateTime(LocalDateTime.now());
 
             boolean success = taskService.updateById(task);
 
@@ -412,7 +421,7 @@ public class TaskController {
             }
 
             if (success) {
-                taskActivityRecorder.record(id, TaskActivityType.UPDATE_EXPECTED_TIME, expectedTime);
+                taskActivityRecorder.record(id, TaskActivityType.UPDATE_EXPECTED_TIME, endDateTime.format(formatter));
             }
 
             return Result.success(success);
@@ -575,6 +584,8 @@ public class TaskController {
             result.put("handlerId", parentTask.getHandlerId());
             result.put("handlerName", handlerName);
             result.put("expectedTime", parentTask.getExpectedTime());
+            result.put("expectedStartTime", parentTask.getExpectedStartTime());
+            result.put("duration", parentTask.getDuration());
 
             return Result.success(result);
         } catch (Exception e) {
@@ -620,6 +631,24 @@ public class TaskController {
         } catch (Exception e) {
             return Result.error("获取子任务失败: " + e.getMessage());
         }
+    }
+
+    /**
+     * 获取任务的前置任务
+     */
+    @GetMapping("/pre_tasks/{taskId}")
+    public Result<List<Task>> getPreTasks(@PathVariable Long taskId) {
+        List<Task> preTasks = taskService.getPreTasks(taskId);
+        return Result.success(preTasks);
+    }
+
+    /**
+     * 获取任务的后置任务
+     */
+    @GetMapping("/post_tasks/{taskId}")
+    public Result<List<Task>> getPostTasks(@PathVariable Long taskId) {
+        List<Task> postTasks = taskService.getPostTasks(taskId);
+        return Result.success(postTasks);
     }
 
     /**

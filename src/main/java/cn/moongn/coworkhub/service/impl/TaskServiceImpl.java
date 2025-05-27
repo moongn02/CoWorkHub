@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,6 +183,58 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             return this.getById(task.getParentTaskId());
         }
         return null;
+    }
+
+    /**
+     * 获取前置任务
+     */
+    @Override
+    public List<Task> getPreTasks(Long taskId) {
+        // 获取当前任务
+        Task task = this.getById(taskId);
+        if (task == null) {
+            throw new RuntimeException("任务不存在");
+        }
+
+        // 获取前置任务
+        List<Task> preTasks = new ArrayList<>();
+        if (StringUtils.isNotBlank(task.getPredecessorTask())) {
+            String[] preTaskIds = task.getPredecessorTask().split(",");
+            for (String preTaskId : preTaskIds) {
+                Task preTask = this.getById(Long.parseLong(preTaskId));
+                if (preTask != null) {
+                    preTasks.add(preTask);
+                }
+            }
+        }
+
+        return preTasks;
+    }
+
+    /**
+     * 获取后置任务
+     */
+    @Override
+    public List<Task> getPostTasks(Long taskId) {
+        // 获取当前任务
+        Task task = this.getById(taskId);
+        if (task == null) {
+            throw new RuntimeException("任务不存在");
+        }
+
+        // 获取后置任务
+        List<Task> postTasks = new ArrayList<>();
+        if (StringUtils.isNotBlank(task.getPostTask())) {
+            String[] postTaskIds = task.getPostTask().split(",");
+            for (String postTaskId : postTaskIds) {
+                Task postTask = this.getById(Long.parseLong(postTaskId));
+                if (postTask != null) {
+                    postTasks.add(postTask);
+                }
+            }
+        }
+
+        return postTasks;
     }
 
     @Override
