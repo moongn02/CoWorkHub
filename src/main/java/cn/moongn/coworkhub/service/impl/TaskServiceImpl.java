@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,10 +86,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             // 获取父任务
             Task parentTask = this.getById(parentTaskId);
             if (parentTask == null) {
-                throw new RuntimeException("父任务不存在");
+                throw new ApiException("父任务不存在");
             }
 
-            for (Task subTask : subTasks) {
+            // 保存子任务并记录ID映射
+            Map<Integer, Long> indexToIdMap = new HashMap<>();
+            for (int i = 0; i < subTasks.size(); i++) {
+                Task subTask = subTasks.get(i);
                 // 继承父任务的部分属性
                 subTask.setParentTaskId(parentTaskId);
                 subTask.setProjectId(parentTask.getProjectId());
@@ -95,7 +100,6 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 subTask.setPriority(parentTask.getPriority());
                 subTask.setStatus(1); // 设置为"已分派"状态
                 subTask.setCreateTime(LocalDateTime.now());
-                subTask.setUpdateTime(LocalDateTime.now());
 
                 // 如果子任务没有设置标题，使用父任务的标题
                 if (subTask.getTitle() == null || subTask.getTitle().isEmpty()) {
@@ -108,7 +112,46 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 }
 
                 // 保存子任务
-                this.save(subTask);
+                boolean saved = this.save(subTask);
+                if (!saved) {
+                    throw new RuntimeException("保存子任务失败");
+                }
+
+                // 获取保存后的子任务ID
+                Long subTaskId = subTask.getId();
+                if (subTaskId == null) {
+                    throw new RuntimeException("获取子任务ID失败");
+                }
+
+                // 记录索引到ID的映射
+                indexToIdMap.put(i, subTaskId);
+            }
+
+            // 更新前置/后置任务关系
+            for (Task subTask : subTasks) {
+                // 转换前置任务索引为ID
+                if (StringUtils.isNotBlank(subTask.getPredecessorTask())) {
+                    String[] preIndices = subTask.getPredecessorTask().split(",");
+                    String preIds = Arrays.stream(preIndices)
+                            .map(index -> indexToIdMap.get(Integer.parseInt(index)).toString())
+                            .collect(Collectors.joining(","));
+                    subTask.setPredecessorTask(preIds);
+                }
+
+                // 转换后置任务索引为ID
+                if (StringUtils.isNotBlank(subTask.getPostTask())) {
+                    String[] postIndices = subTask.getPostTask().split(",");
+                    String postIds = Arrays.stream(postIndices)
+                            .map(index -> indexToIdMap.get(Integer.parseInt(index)).toString())
+                            .collect(Collectors.joining(","));
+                    subTask.setPostTask(postIds);
+                }
+
+                // 更新子任务
+                boolean updated = this.updateById(subTask);
+                if (!updated) {
+                    throw new RuntimeException("更新子任务关系失败");
+                }
             }
 
             return true;

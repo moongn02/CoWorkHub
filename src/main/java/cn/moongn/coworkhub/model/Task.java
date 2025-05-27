@@ -25,6 +25,8 @@ public class Task {
     private Integer status;
     private Integer priority;
     private Integer duration;
+    private String predecessorTask;
+    private String postTask;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime actualStartTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

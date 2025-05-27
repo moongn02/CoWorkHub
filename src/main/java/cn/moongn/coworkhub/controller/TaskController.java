@@ -306,12 +306,31 @@ public class TaskController {
                     subTask.setHandlerId(Long.valueOf(subTaskData.get("handlerId").toString()));
                 }
 
-                // 设置期望完成时间
-                if (subTaskData.get("expectedTime") != null) {
+                // 设置预计开始时间
+                if (subTaskData.get("expectedStartTime") != null) {
                     // 将字符串日期转换为LocalDateTime
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    LocalDateTime dateTime = LocalDateTime.parse(subTaskData.get("expectedTime").toString(), formatter);
-                    subTask.setExpectedTime(dateTime);
+                    LocalDateTime dateTime = LocalDateTime.parse(subTaskData.get("expectedStartTime").toString(), formatter);
+                    subTask.setExpectedStartTime(dateTime);
+                }
+
+                // 设置持续时间
+                if (subTaskData.get("duration") != null) {
+                    subTask.setDuration(Integer.valueOf(subTaskData.get("duration").toString()));
+                }
+
+                // 计算期望完成时间
+                if (subTask.getExpectedStartTime() != null && subTask.getDuration() != null) {
+                    LocalDateTime expectedTime = subTask.getExpectedStartTime().plusDays(subTask.getDuration());
+                    subTask.setExpectedTime(expectedTime);
+                }
+
+                // 设置前置任务和后置任务
+                if (subTaskData.get("predecessorTask") != null) {
+                    subTask.setPredecessorTask(subTaskData.get("predecessorTask").toString());
+                }
+                if (subTaskData.get("postTask") != null) {
+                    subTask.setPostTask(subTaskData.get("postTask").toString());
                 }
 
                 // 设置内容
