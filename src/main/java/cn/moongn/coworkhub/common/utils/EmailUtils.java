@@ -69,4 +69,32 @@ public class EmailUtils {
 
         return sendSimpleMail(to, subject, content);
     }
+
+    /**
+     * 发送后置任务可开始处理的通知邮件
+     *
+     * @param to         收件人邮箱
+     * @param realName   收件人姓名
+     * @param taskTitle  任务标题
+     * @param taskId     任务ID
+     * @param expectedTime  期望完成时间
+     * @return 是否发送成功
+     */
+    public boolean sendPostTaskNotifyMail(String to, String realName, String taskTitle, Long taskId, String expectedTime) {
+        String subject = "CoWorkHub - 任务开始通知";
+        String content = String.format(
+                "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;'>" +
+                        "<h2 style='color: #4086f4;'>任务开始通知</h2>" +
+                        "<p>您好，<b>%s</b>：</p>" +
+                        "<p>您负责的任务 <b>【%s】</b>（ID：%d） 的所有前置任务已全部完成，可以开始处理了。</p>" +
+                        "<p><b>期望完成时间：</b> %s</p>" +
+                        "<p>请及时处理，谢谢！</p>" +
+                        "<p style='color: #888;'>本邮件由系统自动发送，请勿回复。</p>" +
+                        "<p>CoWorkHub 团队</p>" +
+                        "</div>",
+                realName, taskTitle, taskId, expectedTime
+        );
+
+        return sendSimpleMail(to, subject, content);
+    }
 }

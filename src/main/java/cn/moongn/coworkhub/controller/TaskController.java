@@ -1,6 +1,7 @@
 package cn.moongn.coworkhub.controller;
 
 import cn.moongn.coworkhub.common.api.Result;
+import cn.moongn.coworkhub.common.utils.EmailUtils;
 import cn.moongn.coworkhub.common.utils.TaskActivityRecorder;
 import cn.moongn.coworkhub.common.constant.enums.TaskActivityType;
 import cn.moongn.coworkhub.model.*;
@@ -30,6 +31,7 @@ public class TaskController {
     private final TaskCommentService taskCommentService;
     private final TaskActivityService taskActivityService;
     private final TaskActivityRecorder taskActivityRecorder;
+    private final EmailUtils emailUtils;
 
     /**
      * 创建任务
@@ -195,6 +197,42 @@ public class TaskController {
             // 更新任务状态
             Task task = taskService.getById(id);
             if (task == null) return Result.error("任务不存在");
+
+            // 已完成时检查前置/后置任务情况并发送开始提醒邮件
+            if (status == 3) {
+                // 获取前置任务和后置任务
+                List<Task> preTasks = taskService.getPreTasks(id);
+                List<Task> postTasks = taskService.getPostTasks(id);
+
+                boolean allPreFinished = true;
+                if (preTasks != null && !preTasks.isEmpty()) {
+                    for (Task preTask : preTasks) {
+                        if (preTask.getStatus() == null || preTask.getStatus() != 3) {
+                            allPreFinished = false;
+                            break;
+                        }
+                    }
+                }
+
+                // 如果有前置任务且全部已完成，并且有后置任务
+                if (allPreFinished && postTasks != null && !postTasks.isEmpty()) {
+                    for (Task postTask : postTasks) {
+                        if (postTask.getHandlerId() != null) {
+                            User handler = userService.getById(postTask.getHandlerId());
+                            if (handler != null && handler.getEmail() != null && !handler.getEmail().isEmpty()) {
+                                // 发送邮件通知
+                                emailUtils.sendPostTaskNotifyMail(
+                                        handler.getEmail(),
+                                        handler.getRealName(),
+                                        postTask.getTitle(),
+                                        postTask.getId(),
+                                        postTask.getExpectedTime() != null ? postTask.getExpectedTime().toString() : ""
+                                );
+                            }
+                        }
+                    }
+                }
+            }
 
             // 只在要改为已完成时校验
             if (status == 3) {
