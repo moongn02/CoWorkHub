@@ -251,6 +251,29 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         return taskMapper.countUnfinishedTasks(userId);
     }
 
+    @Override
+    public List<Task> getBrotherTasks(Long taskId) {
+        // 获取当前任务
+        Task currentTask = this.getById(taskId);
+        if (currentTask == null) {
+            throw new RuntimeException("任务不存在");
+        }
+
+        // 如果没有父任务，则没有兄弟任务
+        if (currentTask.getParentTaskId() == null) {
+            return new ArrayList<>();
+        }
+
+        // 构建查询条件
+        LambdaQueryWrapper<Task> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Task::getParentTaskId, currentTask.getParentTaskId())
+                .ne(Task::getId, taskId)
+                .orderByAsc(Task::getCreateTime);
+
+        // 查询兄弟任务
+        return this.list(queryWrapper);
+    }
+
     /**
      * 分页查询任务
      */

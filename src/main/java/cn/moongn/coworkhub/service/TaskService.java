@@ -61,6 +61,13 @@ public interface TaskService extends IService<Task> {
     List<Task> getPostTasks(Long taskId);
 
     /**
+     * 获取兄弟任务列表
+     * @param taskId 当前任务ID
+     * @return 兄弟任务列表
+     */
+    List<Task> getBrotherTasks(Long taskId);
+
+    /**
      * 将Task实体转换为DTO
      * @param task 任务实体
      * @return 任务DTO

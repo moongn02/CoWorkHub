@@ -690,6 +690,70 @@ public class TaskController {
     }
 
     /**
+     * 获取兄弟任务
+     */
+    @GetMapping("/brother_tasks/{taskId}")
+    public Result<List<Map<String, Object>>> getBrotherTasks(@PathVariable Long taskId) {
+        try {
+            Task currentTask = taskService.getById(taskId);
+            if (currentTask == null) {
+                return Result.error("任务不存在");
+            }
+
+            // 如果没有父任务，则没有兄弟任务
+            if (currentTask.getParentTaskId() == null) {
+                return Result.success(new ArrayList<>());
+            }
+
+            // 获取所有兄弟任务
+            List<Task> brotherTasks = taskService.getBrotherTasks(taskId);
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            // 获取前置任务和后置任务
+            List<Task> preTasks = taskService.getPreTasks(taskId);
+            List<Task> postTasks = taskService.getPostTasks(taskId);
+
+            for (Task brotherTask : brotherTasks) {
+                // 获取处理人信息
+                String handlerName = "";
+                if (brotherTask.getHandlerId() != null) {
+                    User handler = userService.getById(brotherTask.getHandlerId());
+                    if (handler != null) {
+                        handlerName = handler.getRealName();
+                    }
+                }
+
+                // 获取状态文本
+                String statusText = getTaskStatusText(brotherTask.getStatus());
+
+                // 确定任务关系类型
+                String relationType = "brother";
+                if (preTasks != null && preTasks.stream().anyMatch(t -> t.getId().equals(brotherTask.getId()))) {
+                    relationType = "predecessor";
+                } else if (postTasks != null && postTasks.stream().anyMatch(t -> t.getId().equals(brotherTask.getId()))) {
+                    relationType = "post";
+                }
+
+                Map<String, Object> taskMap = new HashMap<>();
+                taskMap.put("id", brotherTask.getId());
+                taskMap.put("title", brotherTask.getTitle());
+                taskMap.put("status", brotherTask.getStatus());
+                taskMap.put("statusText", statusText);
+                taskMap.put("handlerId", brotherTask.getHandlerId());
+                taskMap.put("handlerName", handlerName);
+                taskMap.put("expectedTime", brotherTask.getExpectedTime());
+                taskMap.put("relationType", relationType);
+
+                result.add(taskMap);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取兄弟任务失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 获取任务进度
      */
     @GetMapping("/activities/{taskId}")
