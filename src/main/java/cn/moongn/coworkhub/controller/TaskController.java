@@ -661,6 +661,8 @@ public class TaskController {
                 taskMap.put("handlerId", subTask.getHandlerId());
                 taskMap.put("handlerName", handlerName);
                 taskMap.put("expectedTime", subTask.getExpectedTime());
+                taskMap.put("expectedStartTime", subTask.getExpectedStartTime());
+                taskMap.put("duration", subTask.getDuration());
 
                 result.add(taskMap);
             }
