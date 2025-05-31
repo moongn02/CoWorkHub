@@ -588,9 +588,7 @@ public class IssueJobHandlerImpl implements IssueJobHandler {
             case 1 -> "已分派";
             case 2 -> "处理中";
             case 3 -> "已解决";
-            case 4 -> "已暂停";
-            case 5 -> "已关闭";
-            default -> "未知状态(" + status + ")";
+            default -> "未知";
         };
     }
 
@@ -606,7 +604,7 @@ public class IssueJobHandlerImpl implements IssueJobHandler {
             case 3 -> "一般";
             case 4 -> "轻微";
             case 5 -> "建议";
-            default -> "未知级别(" + severity + ")";
+            default -> "未知";
         };
     }
 }

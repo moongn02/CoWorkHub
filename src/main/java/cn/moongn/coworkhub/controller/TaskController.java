@@ -541,8 +541,6 @@ public class TaskController {
             case 1 -> "已分派";
             case 2 -> "处理中";
             case 3 -> "已解决";
-            case 4 -> "已暂停";
-            case 5 -> "已关闭";
             default -> "未知";
         };
     }
