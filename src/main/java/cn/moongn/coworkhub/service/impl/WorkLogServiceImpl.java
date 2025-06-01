@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,6 +87,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         workLog.setUserId(currentUser.getId());
+        workLog.setLogDate(LocalDate.now(ZoneId.of("Asia/Shanghai")));
 
         // 检查是否已存在同一天同一类型的日志
         LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
